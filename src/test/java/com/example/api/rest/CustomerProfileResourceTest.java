@@ -1,6 +1,8 @@
 package com.example.api.rest;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -57,5 +59,20 @@ class CustomerProfileResourceTest {
                 () -> assertEquals(new BigDecimal("350000.00"), response.totalExposure())
         );
     }
-}
 
+    @Test
+    void shouldRejectOverlongCustomerId() {
+        final String customerId = "C".repeat(65);
+
+        given()
+                .pathParam("customerId", customerId)
+                .when()
+                .get("/api/customers/{customerId}/profile")
+                .then()
+                .statusCode(400)
+                .body("code", equalTo("VALIDATION_FAILED"))
+                .body("message", equalTo("Request validation failed"))
+                .body("violations.field", hasItem("customerId"))
+                .body("violations.message", hasItem("size must be between 0 and 64"));
+    }
+}

@@ -2,7 +2,9 @@ package com.example.api.application;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.api.downstream.CustomerCoreGateway;
@@ -47,5 +49,41 @@ class CustomerProfileServiceTest {
                 () -> assertEquals(2, result.exposures().size())
         );
     }
-}
 
+    @Test
+    void shouldTrimCustomerIdBeforeCallingDownstreams() {
+        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
+        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
+        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
+
+        when(customerCoreGateway.fetchCustomerProfile("CUST-TRIM")).thenReturn(new CustomerCoreProfile(
+                "CUST-TRIM",
+                "Robin",
+                "Singh",
+                "COMMERCIAL_BANKING",
+                "USD",
+                new BigDecimal("1000.00")
+        ));
+        when(exposureGateway.fetchExposures("CUST-TRIM")).thenReturn(List.of());
+
+        final CustomerProfileView result = service.getCustomerProfile("  CUST-TRIM  ");
+
+        assertEquals("CUST-TRIM", result.customerId());
+        verify(customerCoreGateway).fetchCustomerProfile("CUST-TRIM");
+        verify(exposureGateway).fetchExposures("CUST-TRIM");
+    }
+
+    @Test
+    void shouldRejectBlankCustomerId() {
+        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
+        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
+        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
+
+        final InvalidRequestException exception = assertThrows(
+                InvalidRequestException.class,
+                () -> service.getCustomerProfile("   ")
+        );
+
+        assertEquals("customerId must not be blank", exception.getMessage());
+    }
+}

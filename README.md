@@ -9,6 +9,8 @@ Barebones Quarkus 3.34.1 template for Java 21 teams building REST and GraphQL mi
 - Maven
 - REST endpoint support with Jackson
 - GraphQL endpoint support with SmallRye GraphQL
+- Bean Validation for request contracts
+- OpenAPI generation for REST endpoints
 - Health endpoint with SmallRye Health
 - OpenTelemetry support
 - Datadog APM support via OTLP export to a Datadog Agent
@@ -21,6 +23,7 @@ Barebones Quarkus 3.34.1 template for Java 21 teams building REST and GraphQL mi
 This template is optimized for API orchestration services:
 
 - Keep endpoint classes thin.
+- Validate external inputs at the API edge and fail with predictable client-facing errors.
 - Put downstream orchestration and mapping in an application service.
 - Hide downstream concerns behind interfaces so teams can replace stubs with REST clients, messaging adapters, or SDK-backed integrations later.
 - Prefer immutable DTOs and deterministic transformations.
@@ -49,6 +52,8 @@ src/main/java/com/example/api
 - REST: `GET /api/customers/{customerId}/profile`
 - GraphQL: `POST /graphql`
 - Health: `GET /q/health`
+- OpenAPI: `GET /q/openapi`
+- Swagger UI in dev/test: `GET /q/swagger-ui/`
 - GraphQL UI in dev/test: `GET /q/graphql-ui/`
 
 Example REST call:
@@ -77,6 +82,8 @@ curl http://localhost:8080/graphql \
 - JDK 21 for local Maven builds
 - Maven 3.9+
 - Docker Desktop or compatible Docker runtime for container-based runs
+
+The build now fails during `validate` if it is run with Java other than 21, so teams get a fast, clear setup error instead of a compiler failure later in the lifecycle.
 
 ### Dev mode
 
@@ -126,6 +133,13 @@ When the `observability` Compose profile is enabled:
 
 If your team prefers the Datadog Java tracer instead of OTLP export, keep this template structure and add the Java agent at runtime through `JAVA_OPTS_APPEND`.
 
+## API starter conventions
+
+- REST inputs use Bean Validation and return a small, predictable JSON error payload for invalid requests.
+- GraphQL inputs are validated before reaching orchestration logic.
+- OpenAPI is available out of the box so REST teams can inspect or publish their contract early.
+- Health is enabled from day one; when you replace stubs with real integrations, evolve readiness checks alongside those adapters.
+
 ## Next steps teams usually add
 
 - downstream REST clients and retries
@@ -134,4 +148,3 @@ If your team prefers the Datadog Java tracer instead of OTLP export, keep this t
 - persistence or caching
 - contract tests for downstream dependencies
 - CI automation and deployment manifests
-

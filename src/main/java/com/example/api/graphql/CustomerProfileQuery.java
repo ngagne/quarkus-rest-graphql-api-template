@@ -3,6 +3,8 @@ package com.example.api.graphql;
 import com.example.api.application.CustomerProfileService;
 import com.example.api.model.CustomerProfileView;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.eclipse.microprofile.graphql.Description;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Name;
@@ -20,8 +22,12 @@ public class CustomerProfileQuery {
 
     @Query("customerProfile")
     @Description("Aggregated customer profile assembled from multiple downstream systems")
-    public CustomerProfileView customerProfile(@Name("customerId") final String customerId) {
+    public CustomerProfileView customerProfile(
+            @Name("customerId")
+            @NotBlank
+            @Size(max = 64)
+            final String customerId
+    ) {
         return customerProfileService.getCustomerProfile(customerId);
     }
 }
-
