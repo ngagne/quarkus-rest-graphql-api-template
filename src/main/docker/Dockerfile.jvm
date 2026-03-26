@@ -1,0 +1,23 @@
+FROM maven:3.9.11-eclipse-temurin-21 AS build
+WORKDIR /workspace
+
+COPY pom.xml checkstyle.xml ./
+RUN mvn -B -ntp dependency:go-offline
+
+COPY src ./src
+RUN mvn -B -ntp clean package -DskipTests
+
+FROM eclipse-temurin:21-jre
+WORKDIR /deployments
+
+ENV JAVA_OPTS_APPEND=""
+
+COPY --from=build /workspace/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=build /workspace/target/quarkus-app/*.jar /deployments/
+COPY --from=build /workspace/target/quarkus-app/app/ /deployments/app/
+COPY --from=build /workspace/target/quarkus-app/quarkus/ /deployments/quarkus/
+
+EXPOSE 8080
+
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS_APPEND} -jar /deployments/quarkus-run.jar"]
+
