@@ -64,6 +64,12 @@ public class CustomerProfileService {
         Objects.requireNonNull(input, "input must not be null");
 
         final String normalizedCustomerId = normalizeCustomerId(input.getCustomerId());
+        validateGivenName(input.getGivenName());
+        validateFamilyName(input.getFamilyName());
+        validateSegment(input.getSegment());
+        validateBaseCurrency(input.getBaseCurrency());
+        validateAvailableBalance(input.getAvailableBalance());
+
         final CustomerCoreProfile coreProfile = new CustomerCoreProfile(
                 normalizedCustomerId,
                 input.getGivenName(),
@@ -166,6 +172,41 @@ public class CustomerProfileService {
             throw new InvalidRequestException("customerId", "customerId must not be blank");
         }
         return normalizedCustomerId;
+    }
+
+    private void validateGivenName(final String givenName) {
+        Objects.requireNonNull(givenName, "givenName must not be null");
+        if (givenName.trim().isEmpty()) {
+            throw new InvalidRequestException("givenName", "givenName must not be blank");
+        }
+    }
+
+    private void validateFamilyName(final String familyName) {
+        Objects.requireNonNull(familyName, "familyName must not be null");
+        if (familyName.trim().isEmpty()) {
+            throw new InvalidRequestException("familyName", "familyName must not be blank");
+        }
+    }
+
+    private void validateSegment(final String segment) {
+        Objects.requireNonNull(segment, "segment must not be null");
+        if (segment.trim().isEmpty()) {
+            throw new InvalidRequestException("segment", "segment must not be blank");
+        }
+    }
+
+    private void validateBaseCurrency(final String baseCurrency) {
+        Objects.requireNonNull(baseCurrency, "baseCurrency must not be null");
+        if (baseCurrency.trim().isEmpty()) {
+            throw new InvalidRequestException("baseCurrency", "baseCurrency must not be blank");
+        }
+    }
+
+    private void validateAvailableBalance(final BigDecimal availableBalance) {
+        Objects.requireNonNull(availableBalance, "availableBalance must not be null");
+        if (availableBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InvalidRequestException("availableBalance", "availableBalance must not be negative");
+        }
     }
 
     private String formatFullName(final CustomerCoreProfile coreProfile) {

@@ -3,6 +3,8 @@ package com.example.api.graphql;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -230,5 +232,121 @@ class CustomerProfileQueryTest {
                 () -> assertEquals("USD", response.getBaseCurrency()),
                 () -> assertEquals(0, new BigDecimal("200000.00").compareTo(response.getAvailableBalance()))
         );
+    }
+
+    @Test
+    void shouldRejectCreateCustomerProfileWithBlankGivenName() {
+        // GraphQL validates non-null fields at the variable coercion level
+        final String mutation = "mutation($input: CreateCustomerProfileInput!) { "
+                + "createCustomerProfile(input: $input) { customerId } }";
+        final JsonPath jsonPath = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "query", mutation,
+                        "variables", Map.of(
+                                "customerId", "CUST-BLANK",
+                                "givenName", "",
+                                "familyName", "Test",
+                                "segment", "RETAIL",
+                                "baseCurrency", "USD",
+                                "availableBalance", 1000.00
+                        )
+                ))
+                .when()
+                .post("/graphql")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath();
+
+        final List<Map<String, Object>> errors = jsonPath.getList("errors");
+        assertNotNull(errors);
+        assertTrue(errors.size() > 0, "Expected errors in response for blank givenName");
+    }
+
+    @Test
+    void shouldRejectCreateCustomerProfileWithNegativeBalance() {
+        final String mutation = "mutation($input: CreateCustomerProfileInput!) { "
+                + "createCustomerProfile(input: $input) { customerId } }";
+        final JsonPath jsonPath = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "query", mutation,
+                        "variables", Map.of(
+                                "customerId", "CUST-NEG",
+                                "givenName", "Test",
+                                "familyName", "User",
+                                "segment", "RETAIL",
+                                "baseCurrency", "USD",
+                                "availableBalance", -100.00
+                        )
+                ))
+                .when()
+                .post("/graphql")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath();
+
+        final List<Map<String, Object>> errors = jsonPath.getList("errors");
+        assertNotNull(errors);
+        assertTrue(errors.size() > 0, "Expected errors in response for negative balance");
+    }
+
+    @Test
+    void shouldRejectUpdateNameWithBlankCustomerId() {
+        final String mutation = "mutation($customerId: String!, $givenName: String!, "
+                + "$familyName: String!) { "
+                + "updateName(customerId: $customerId, givenName: $givenName, "
+                + "familyName: $familyName) { customerId } }";
+        final JsonPath jsonPath = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "query", mutation,
+                        "variables", Map.of(
+                                "customerId", "",
+                                "givenName", "Test",
+                                "familyName", "User"
+                        )
+                ))
+                .when()
+                .post("/graphql")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath();
+
+        final List<Map<String, Object>> errors = jsonPath.getList("errors");
+        assertNotNull(errors);
+        assertTrue(errors.size() > 0, "Expected errors in response for blank customerId");
+    }
+
+    @Test
+    void shouldRejectUpdateBalanceWithNotFoundCustomer() {
+        when(customerCoreGateway.fetchCustomerProfile("NON-EXISTENT")).thenReturn(null);
+
+        final String mutation = "mutation($customerId: String!, "
+                + "$availableBalance: BigDecimal!) { "
+                + "updateAvailableBalance(customerId: $customerId, "
+                + "availableBalance: $availableBalance) { customerId } }";
+        final JsonPath jsonPath = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "query", mutation,
+                        "variables", Map.of(
+                                "customerId", "NON-EXISTENT",
+                                "availableBalance", 50000.00
+                        )
+                ))
+                .when()
+                .post("/graphql")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath();
+
+        final List<Map<String, Object>> errors = jsonPath.getList("errors");
+        assertNotNull(errors);
+        assertTrue(errors.size() > 0, "Expected errors in response for non-existent customer");
     }
 }
