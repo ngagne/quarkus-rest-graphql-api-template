@@ -98,6 +98,7 @@
                             </graphqlSchemas>
                             <outputDir>${project.build.directory}/generated-sources/graphql</outputDir>
                             <packageName>com.example.api.graphql.generated</packageName>
+                            <modelPackageName>com.example.api.model</modelPackageName>
                             <configurationFiles>
                                 <configurationFile>src/main/resources/graphql/codegen-config.json</configurationFile>
                             </configurationFiles>
@@ -106,11 +107,9 @@
                                 <Float>java.math.BigDecimal</Float>
                             </customTypesMapping>
                             <generateClient>false</generateClient>
-                            <generateApis>true</generateApis>
-                            <apiNameSuffix>QueryResolver</apiNameSuffix>
-                            <typeResolverSuffix>TypeResolver</typeResolverSuffix>
+                            <generateApis>false</generateApis>
                             <generateModelsForRootTypes>true</generateModelsForRootTypes>
-                            <generateImmutableModels>true</generateImmutableModels>
+                            <generateImmutableModels>false</generateImmutableModels>
                             <generateToString>true</generateToString>
                             <generateEqualsAndHashCode>true</generateEqualsAndHashCode>
                             <addGeneratedAnnotation>true</addGeneratedAnnotation>
@@ -134,7 +133,8 @@
                             <generatorName>jaxrs-spec</generatorName>
                             <output>${project.build.directory}/generated-sources/openapi</output>
                             <apiPackage>com.example.api.rest.generated</apiPackage>
-                            <modelPackage>com.example.api.graphql.generated</modelPackage>
+                            <!-- Models are manually maintained in com.example.api.model for shared use -->
+                            <modelPackage>com.example.api.model</modelPackage>
                             <generateModels>false</generateModels>
                             <generateModelTests>false</generateModelTests>
                             <generateModelDocumentation>false</generateModelDocumentation>
@@ -149,14 +149,24 @@
                                 <useBeanValidation>true</useBeanValidation>
                                 <useSwaggerAnnotations>false</useSwaggerAnnotations>
                             </configOptions>
+                            <!--
+                                Map OpenAPI schema types to existing shared model classes.
+                                These classes are manually maintained in com.example.api.model
+                                for shared use between REST and GraphQL layers.
+                            -->
                             <importMappings>
-                                <importMapping>CustomerProfileView=com.example.api.graphql.generated.CustomerProfileView</importMapping>
-                                <importMapping>ProductExposure=com.example.api.graphql.generated.ProductExposure</importMapping>
+                                <importMapping>CustomerProfileView=com.example.api.model.CustomerProfileView</importMapping>
+                                <importMapping>ProductExposure=com.example.api.model.ProductExposure</importMapping>
+                                <importMapping>CreateCustomerProfileRequest=com.example.api.model.CreateCustomerProfileRequest</importMapping>
+                                <importMapping>UpdateCustomerProfileRequest=com.example.api.model.UpdateCustomerProfileRequest</importMapping>
+                                <importMapping>ApiErrorResponse=com.example.api.model.ApiErrorResponse</importMapping>
+                                <importMapping>ApiErrorResponseViolations=com.example.api.model.ApiErrorResponseViolations</importMapping>
                             </importMappings>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <!-- Post-process generated OpenAPI interfaces to add missing imports -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -171,7 +181,63 @@
                         <configuration>
                             <sources>
                                 <source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>
+                                <source>${project.build.directory}/generated-sources/graphql</source>
                             </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/generated-sources/openapi/src/gen/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Post-process generated OpenAPI interfaces to add missing model imports -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>add-productexposure-import</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sed</executable>
+                            <arguments>
+                                <argument>-i.bak</argument>
+                                <argument>/import com.example.api.model.CustomerProfileView;/a\
+import com.example.api.model.ProductExposure;
+</argument>
+                                <argument>${project.build.directory}/generated-sources/openapi/src/gen/java/com/example/api/rest/generated/CustomerProfileApi.java</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>cleanup-backup-files</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>find</executable>
+                            <arguments>
+                                <argument>${project.build.directory}/generated-sources/openapi</argument>
+                                <argument>-name</argument>
+                                <argument>*.bak</argument>
+                                <argument>-delete</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>

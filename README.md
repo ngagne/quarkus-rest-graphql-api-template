@@ -74,20 +74,52 @@ src/main/java/com/example/api
 
 ## Endpoints
 
-- REST: `GET /api/customers/{customerId}/profile`
+- REST:
+  - `GET /api/customers/{customerId}/profile` - Get customer profile
+  - `POST /api/customers/profile` - Create customer profile
+  - `PUT /api/customers/{customerId}/profile` - Update customer profile
 - GraphQL: `POST /graphql`
+  - Query: `customerProfile(customerId: String!): CustomerProfileView`
+  - Mutation: `createCustomerProfile(input: CreateCustomerProfileInput!): CustomerProfileView!`
+  - Mutation: `updateCustomerProfile(input: UpdateCustomerProfileInput!): CustomerProfileView!`
 - Health: `GET /q/health`
 - OpenAPI: `GET /q/openapi`
 - Swagger UI in dev/test: `GET /q/swagger-ui/`
 - GraphQL UI in dev/test: `GET /q/graphql-ui/`
 
-Example REST call:
+Example REST GET call:
 
 ```bash
 curl http://localhost:8080/api/customers/CUST-001/profile
 ```
 
-Example GraphQL call:
+Example REST POST call:
+
+```bash
+curl -X POST http://localhost:8080/api/customers/profile \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "customerId": "CUST-001",
+    "givenName": "John",
+    "familyName": "Doe",
+    "segment": "RETAIL",
+    "baseCurrency": "USD",
+    "availableBalance": 50000.00
+  }'
+```
+
+Example REST PUT call:
+
+```bash
+curl -X PUT http://localhost:8080/api/customers/CUST-001/profile \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "customerId": "CUST-001",
+    "availableBalance": 75000.00
+  }'
+```
+
+Example GraphQL query:
 
 ```bash
 curl http://localhost:8080/graphql \
@@ -96,6 +128,42 @@ curl http://localhost:8080/graphql \
     "query": "query($customerId: String!) { customerProfile(customerId: $customerId) { customerId fullName segment baseCurrency availableBalance totalExposure exposures { productCode currency notional } } }",
     "variables": {
       "customerId": "CUST-001"
+    }
+  }'
+```
+
+Example GraphQL mutation (create):
+
+```bash
+curl http://localhost:8080/graphql \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "mutation($input: CreateCustomerProfileInput!) { createCustomerProfile(input: $input) { customerId fullName segment baseCurrency availableBalance } }",
+    "variables": {
+      "input": {
+        "customerId": "CUST-002",
+        "givenName": "Jane",
+        "familyName": "Smith",
+        "segment": "WEALTH",
+        "baseCurrency": "EUR",
+        "availableBalance": 100000.00
+      }
+    }
+  }'
+```
+
+Example GraphQL mutation (update):
+
+```bash
+curl http://localhost:8080/graphql \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "mutation($input: UpdateCustomerProfileInput!) { updateCustomerProfile(input: $input) { customerId fullName segment baseCurrency availableBalance } }",
+    "variables": {
+      "input": {
+        "customerId": "CUST-001",
+        "availableBalance": 75000.00
+      }
     }
   }'
 ```

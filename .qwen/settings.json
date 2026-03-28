@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn *)",
+      "Bash(find *)",
+      "Bash(mv *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(// *)",
+      "Bash(string *)",
+      "Bash(.contenttype)",
+      "Bash(.body)",
+      "Bash(\"query\", *)",
+      "Bash(\"variables\", *)",
+      "Bash(\"customerid\", *)",
+      "Bash(\"givenname\", *)",
+      "Bash(\"familyname\", *)",
+      "Bash(\"segment\", *)",
+      "Bash(\"basecurrency\", *)",
+      "Bash(\"availablebalance\", *)",
+      "Bash(.when)",
+      "Bash(.post)",
+      "Bash(.then)",
+      "Bash(.statuscode)",
+      "Bash(.extract)",
+      "Bash(.asstring)",
+      "Bash(system.out.println)",
+      "Bash(eof)",
+      "Bash(curl *)",
+      "Bash(sleep *)",
+      "Bash(jq *)",
+      "Bash(kill *)",
+      "Bash(true)",
+      "Bash(javap *)",
+      "Bash(python3 *)"
+    ]
+  },
+  "$version": 3
+}

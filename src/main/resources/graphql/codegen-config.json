@@ -1,6 +1,6 @@
 {
   "customAnnotationsMapping": {
-    "Query": ["@org.eclipse.microprofile.graphql.GraphQLApi"],
-    "Query..*": ["@org.eclipse.microprofile.graphql.Query"]
+    "CreateCustomerProfileInput": ["@org.eclipse.microprofile.graphql.Input(\"CreateCustomerProfileInput\")"],
+    "UpdateCustomerProfileInput": ["@org.eclipse.microprofile.graphql.Input(\"UpdateCustomerProfileInput\")"]
   }
 }

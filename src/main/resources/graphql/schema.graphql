@@ -7,6 +7,29 @@ type Query {
   customerProfile(customerId: String!): CustomerProfileView
 }
 
+type Mutation {
+  createCustomerProfile(input: CreateCustomerProfileInput!): CustomerProfileView!
+  updateCustomerProfile(input: UpdateCustomerProfileInput!): CustomerProfileView!
+}
+
+input CreateCustomerProfileInput {
+  customerId: String!
+  givenName: String!
+  familyName: String!
+  segment: String!
+  baseCurrency: String!
+  availableBalance: BigDecimal!
+}
+
+input UpdateCustomerProfileInput {
+  customerId: String!
+  givenName: String
+  familyName: String
+  segment: String
+  baseCurrency: String
+  availableBalance: BigDecimal
+}
+
 type CustomerProfileView {
   customerId: String!
   fullName: String

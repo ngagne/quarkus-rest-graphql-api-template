@@ -14,6 +14,25 @@ This repository is a minimal Quarkus API template. Keep it small, production-min
 - Favor immutable DTOs and predictable transformations.
 - Do not add databases, auth, messaging, or cloud-specific tooling unless requested.
 
+## API design
+
+The project uses a design-first approach for both REST and GraphQL APIs:
+
+- GraphQL schema is the source of truth for data models (`src/main/resources/graphql/schema.graphql`)
+- OpenAPI spec defines REST endpoints (`src/main/resources/openapi/openapi.yaml`)
+- Both API flavors share the same data models (generated from GraphQL schema)
+- REST-specific request/response DTOs are created manually when needed
+
+### Current API operations
+
+**Customer Profile:**
+- REST: `GET /api/customers/{customerId}/profile` - Retrieve profile
+- REST: `POST /api/customers/profile` - Create profile
+- REST: `PUT /api/customers/{customerId}/profile` - Update profile
+- GraphQL: `customerProfile(customerId: String!)` - Query
+- GraphQL: `createCustomerProfile(input: CreateCustomerProfileInput!)` - Mutation
+- GraphQL: `updateCustomerProfile(input: UpdateCustomerProfileInput!)` - Mutation
+
 ## Testing expectations
 
 - Keep endpoint coverage with `@QuarkusTest` and REST Assured.

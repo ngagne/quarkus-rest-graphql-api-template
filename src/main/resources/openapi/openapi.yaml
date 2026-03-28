@@ -2,9 +2,24 @@ openapi: 3.0.3
 info:
   title: Customer Profile API
   version: 1.0.0
+  description: API to retrieve aggregated customer profiles, including exposures across various products.
+  contact:
+    name: API Support
+    email: support@api.example.com
+servers:
+  - url: https://p2-dev.api.example.com
+    description: Dev (P-2) Server
+  - url: https://p1-qa.api.example.com
+    description: QA (P-1) Server
+  - url: https://api.example.com
+    description: Production server
+tags:
+  - name: CustomerProfile
+    description: Operations related to customer profiles
 paths:
   /api/customers/{customerId}/profile:
     get:
+      description: Retrieve an aggregated customer profile, including exposures across various products.
       tags:
         - CustomerProfile
       summary: Get an aggregated customer profile
@@ -24,8 +39,141 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerProfileView'
+    put:
+      description: Update an existing customer profile with the provided fields.
+      tags:
+        - CustomerProfile
+      summary: Update a customer profile
+      operationId: updateCustomerProfile
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Opaque customer identifier
+          schema:
+            type: string
+            maxLength: 64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerProfileRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileView'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/customers/profile:
+    post:
+      description: Create a new customer profile.
+      tags:
+        - CustomerProfile
+      summary: Create a customer profile
+      operationId: createCustomerProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerProfileRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileView'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
 components:
   schemas:
+    CreateCustomerProfileRequest:
+      type: object
+      required:
+        - customerId
+        - givenName
+        - familyName
+        - segment
+        - baseCurrency
+        - availableBalance
+      properties:
+        customerId:
+          type: string
+        givenName:
+          type: string
+        familyName:
+          type: string
+        segment:
+          type: string
+        baseCurrency:
+          type: string
+        availableBalance:
+          type: number
+          format: decimal
+    UpdateCustomerProfileRequest:
+      type: object
+      required:
+        - customerId
+      properties:
+        customerId:
+          type: string
+        givenName:
+          type: string
+        familyName:
+          type: string
+        segment:
+          type: string
+        baseCurrency:
+          type: string
+        availableBalance:
+          type: number
+          format: decimal
+    ApiErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        violations:
+          type: object
+          properties:
+            field:
+              type: array
+              items:
+                type: string
+            message:
+              type: array
+              items:
+                type: string
     CustomerProfileView:
       type: object
       required:
