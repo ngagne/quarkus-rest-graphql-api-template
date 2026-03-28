@@ -9,7 +9,8 @@ type Query {
 
 type Mutation {
   createCustomerProfile(input: CreateCustomerProfileInput!): CustomerProfileView!
-  updateCustomerProfile(input: UpdateCustomerProfileInput!): CustomerProfileView!
+  updateAvailableBalance(customerId: String!, availableBalance: BigDecimal!): CustomerProfileView!
+  updateName(customerId: String!, givenName: String!, familyName: String!): CustomerProfileView!
 }
 
 input CreateCustomerProfileInput {
@@ -19,15 +20,6 @@ input CreateCustomerProfileInput {
   segment: String!
   baseCurrency: String!
   availableBalance: BigDecimal!
-}
-
-input UpdateCustomerProfileInput {
-  customerId: String!
-  givenName: String
-  familyName: String
-  segment: String
-  baseCurrency: String
-  availableBalance: BigDecimal
 }
 
 type CustomerProfileView {

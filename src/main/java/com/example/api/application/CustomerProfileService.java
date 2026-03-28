@@ -13,6 +13,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+/**
+ * Service for managing customer profiles.
+ * <p>
+ * This service provides both coarse-grained operations for REST APIs
+ * and fine-grained, use-case specific operations for GraphQL mutations.
+ */
+
 @ApplicationScoped
 public class CustomerProfileService {
 
@@ -70,6 +77,65 @@ public class CustomerProfileService {
         return getCustomerProfile(normalizedCustomerId);
     }
 
+    /**
+     * Updates the available balance for a customer profile.
+     * GraphQL mutation: updateAvailableBalance
+     */
+    public CustomerProfileView updateAvailableBalance(final String customerId, final BigDecimal availableBalance) {
+        Objects.requireNonNull(customerId, "customerId must not be null");
+        Objects.requireNonNull(availableBalance, "availableBalance must not be null");
+
+        final String normalizedCustomerId = normalizeCustomerId(customerId);
+        final CustomerCoreProfile existingProfile = customerCoreGateway.fetchCustomerProfile(normalizedCustomerId);
+        if (existingProfile == null) {
+            throw new IllegalStateException("Customer profile not found: " + normalizedCustomerId);
+        }
+
+        final CustomerCoreProfile updatedProfile = new CustomerCoreProfile(
+                normalizedCustomerId,
+                existingProfile.givenName(),
+                existingProfile.familyName(),
+                existingProfile.segment(),
+                existingProfile.baseCurrency(),
+                availableBalance
+        );
+
+        customerCoreGateway.updateCustomerProfile(updatedProfile);
+        return getCustomerProfile(normalizedCustomerId);
+    }
+
+    /**
+     * Updates the given name and family name for a customer profile.
+     * GraphQL mutation: updateName
+     */
+    public CustomerProfileView updateName(final String customerId, final String givenName, final String familyName) {
+        Objects.requireNonNull(customerId, "customerId must not be null");
+        Objects.requireNonNull(givenName, "givenName must not be null");
+        Objects.requireNonNull(familyName, "familyName must not be null");
+
+        final String normalizedCustomerId = normalizeCustomerId(customerId);
+        final CustomerCoreProfile existingProfile = customerCoreGateway.fetchCustomerProfile(normalizedCustomerId);
+        if (existingProfile == null) {
+            throw new IllegalStateException("Customer profile not found: " + normalizedCustomerId);
+        }
+
+        final CustomerCoreProfile updatedProfile = new CustomerCoreProfile(
+                normalizedCustomerId,
+                givenName,
+                familyName,
+                existingProfile.segment(),
+                existingProfile.baseCurrency(),
+                existingProfile.availableBalance()
+        );
+
+        customerCoreGateway.updateCustomerProfile(updatedProfile);
+        return getCustomerProfile(normalizedCustomerId);
+    }
+
+    /**
+     * Updates a customer profile with provided fields.
+     * REST API: PUT /api/customers/{customerId}/profile
+     */
     public CustomerProfileView updateCustomerProfile(final UpdateCustomerProfileInput input) {
         Objects.requireNonNull(input, "input must not be null");
 

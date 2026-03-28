@@ -31,7 +31,8 @@ The project uses a design-first approach for both REST and GraphQL APIs:
 - REST: `PUT /api/customers/{customerId}/profile` - Update profile
 - GraphQL: `customerProfile(customerId: String!)` - Query
 - GraphQL: `createCustomerProfile(input: CreateCustomerProfileInput!)` - Mutation
-- GraphQL: `updateCustomerProfile(input: UpdateCustomerProfileInput!)` - Mutation
+- GraphQL: `updateAvailableBalance(customerId: String!, availableBalance: BigDecimal!)` - Mutation
+- GraphQL: `updateName(customerId: String!, givenName: String!, familyName: String!)` - Mutation
 
 ## Testing expectations
 

@@ -81,7 +81,8 @@ src/main/java/com/example/api
 - GraphQL: `POST /graphql`
   - Query: `customerProfile(customerId: String!): CustomerProfileView`
   - Mutation: `createCustomerProfile(input: CreateCustomerProfileInput!): CustomerProfileView!`
-  - Mutation: `updateCustomerProfile(input: UpdateCustomerProfileInput!): CustomerProfileView!`
+  - Mutation: `updateAvailableBalance(customerId: String!, availableBalance: BigDecimal!): CustomerProfileView!`
+  - Mutation: `updateName(customerId: String!, givenName: String!, familyName: String!): CustomerProfileView!`
 - Health: `GET /q/health`
 - OpenAPI: `GET /q/openapi`
 - Swagger UI in dev/test: `GET /q/swagger-ui/`
@@ -152,18 +153,31 @@ curl http://localhost:8080/graphql \
   }'
 ```
 
-Example GraphQL mutation (update):
+Example GraphQL mutation (update balance):
 
 ```bash
 curl http://localhost:8080/graphql \
   -H 'Content-Type: application/json' \
   -d '{
-    "query": "mutation($input: UpdateCustomerProfileInput!) { updateCustomerProfile(input: $input) { customerId fullName segment baseCurrency availableBalance } }",
+    "query": "mutation($customerId: String!, $availableBalance: BigDecimal!) { updateAvailableBalance(customerId: $customerId, availableBalance: $availableBalance) { customerId fullName segment baseCurrency availableBalance } }",
     "variables": {
-      "input": {
-        "customerId": "CUST-001",
-        "availableBalance": 75000.00
-      }
+      "customerId": "CUST-001",
+      "availableBalance": 75000.00
+    }
+  }'
+```
+
+Example GraphQL mutation (update name):
+
+```bash
+curl http://localhost:8080/graphql \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "query": "mutation($customerId: String!, $givenName: String!, $familyName: String!) { updateName(customerId: $customerId, givenName: $givenName, familyName: $familyName) { customerId fullName segment baseCurrency availableBalance } }",
+    "variables": {
+      "customerId": "CUST-001",
+      "givenName": "John",
+      "familyName": "Smith"
     }
   }'
 ```

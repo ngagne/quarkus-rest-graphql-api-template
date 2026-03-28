@@ -124,9 +124,9 @@ class CustomerProfileQueryTest {
     }
 
     @Test
-    void shouldUpdateCustomerProfileOverGraphql() {
-        when(customerCoreGateway.fetchCustomerProfile("CUST-GQL-UPD")).thenReturn(new CustomerCoreProfile(
-                "CUST-GQL-UPD",
+    void shouldUpdateAvailableBalanceOverGraphql() {
+        when(customerCoreGateway.fetchCustomerProfile("CUST-GQL-BAL")).thenReturn(new CustomerCoreProfile(
+                "CUST-GQL-BAL",
                 "Sam",
                 "Wilson",
                 "WEALTH",
@@ -135,28 +135,28 @@ class CustomerProfileQueryTest {
         ));
         when(customerCoreGateway.updateCustomerProfile(any(CustomerCoreProfile.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(customerCoreGateway.fetchCustomerProfile("CUST-GQL-UPD")).thenReturn(new CustomerCoreProfile(
-                "CUST-GQL-UPD",
+        when(customerCoreGateway.fetchCustomerProfile("CUST-GQL-BAL")).thenReturn(new CustomerCoreProfile(
+                "CUST-GQL-BAL",
                 "Sam",
                 "Wilson",
                 "WEALTH",
                 "USD",
                 new BigDecimal("250000.00")
         ));
-        when(exposureGateway.fetchExposures("CUST-GQL-UPD")).thenReturn(List.of());
+        when(exposureGateway.fetchExposures("CUST-GQL-BAL")).thenReturn(List.of());
 
-        final String mutation = "mutation($input: UpdateCustomerProfileInput!) { "
-                + "updateCustomerProfile(input: $input) { "
+        final String mutation = "mutation($customerId: String!, $availableBalance: BigDecimal!) { "
+                + "updateAvailableBalance(customerId: $customerId, availableBalance: $availableBalance) { "
                 + "customerId fullName segment baseCurrency availableBalance "
                 + "totalExposure exposures { productCode currency notional } } }";
         final JsonPath jsonPath = given()
                 .contentType(ContentType.JSON)
                 .body(Map.of(
                         "query", mutation,
-                        "variables", Map.of("input", Map.of(
-                                "customerId", "CUST-GQL-UPD",
+                        "variables", Map.of(
+                                "customerId", "CUST-GQL-BAL",
                                 "availableBalance", 250000.00
-                        ))
+                        )
                 ))
                 .when()
                 .post("/graphql")
@@ -165,15 +165,70 @@ class CustomerProfileQueryTest {
                 .extract()
                 .jsonPath();
 
-        final CustomerProfileView response = jsonPath.getObject("data.updateCustomerProfile",
+        final CustomerProfileView response = jsonPath.getObject("data.updateAvailableBalance",
                 CustomerProfileView.class);
 
         assertAll(
-                () -> assertEquals("CUST-GQL-UPD", response.getCustomerId()),
+                () -> assertEquals("CUST-GQL-BAL", response.getCustomerId()),
                 () -> assertEquals("Sam Wilson", response.getFullName()),
                 () -> assertEquals("WEALTH", response.getSegment()),
                 () -> assertEquals("USD", response.getBaseCurrency()),
                 () -> assertEquals(0, new BigDecimal("250000.00").compareTo(response.getAvailableBalance()))
+        );
+    }
+
+    @Test
+    void shouldUpdateNameOverGraphql() {
+        when(customerCoreGateway.fetchCustomerProfile("CUST-GQL-NAME")).thenReturn(new CustomerCoreProfile(
+                "CUST-GQL-NAME",
+                "Sam",
+                "Wilson",
+                "WEALTH",
+                "USD",
+                new BigDecimal("200000.00")
+        ));
+        when(customerCoreGateway.updateCustomerProfile(any(CustomerCoreProfile.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(customerCoreGateway.fetchCustomerProfile("CUST-GQL-NAME")).thenReturn(new CustomerCoreProfile(
+                "CUST-GQL-NAME",
+                "Sam",
+                "Wilson-Chen",
+                "WEALTH",
+                "USD",
+                new BigDecimal("200000.00")
+        ));
+        when(exposureGateway.fetchExposures("CUST-GQL-NAME")).thenReturn(List.of());
+
+        final String mutation = "mutation($customerId: String!, $givenName: String!, $familyName: String!) { "
+                + "updateName(customerId: $customerId, givenName: $givenName, familyName: $familyName) { "
+                + "customerId fullName segment baseCurrency availableBalance "
+                + "totalExposure exposures { productCode currency notional } } }";
+        final JsonPath jsonPath = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "query", mutation,
+                        "variables", Map.of(
+                                "customerId", "CUST-GQL-NAME",
+                                "givenName", "Sam",
+                                "familyName", "Wilson-Chen"
+                        )
+                ))
+                .when()
+                .post("/graphql")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath();
+
+        final CustomerProfileView response = jsonPath.getObject("data.updateName",
+                CustomerProfileView.class);
+
+        assertAll(
+                () -> assertEquals("CUST-GQL-NAME", response.getCustomerId()),
+                () -> assertEquals("Sam Wilson-Chen", response.getFullName()),
+                () -> assertEquals("WEALTH", response.getSegment()),
+                () -> assertEquals("USD", response.getBaseCurrency()),
+                () -> assertEquals(0, new BigDecimal("200000.00").compareTo(response.getAvailableBalance()))
         );
     }
 }

@@ -11,7 +11,6 @@ import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.downstream.ExposureGateway;
 import com.example.api.model.CreateCustomerProfileInput;
 import com.example.api.model.CustomerProfileView;
-import com.example.api.model.UpdateCustomerProfileInput;
 import com.example.api.model.CustomerCoreProfile;
 import com.example.api.model.ProductExposure;
 import java.math.BigDecimal;
@@ -129,13 +128,13 @@ class CustomerProfileServiceTest {
     }
 
     @Test
-    void shouldUpdateCustomerProfile() {
+    void shouldUpdateAvailableBalance() {
         final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
         final ExposureGateway exposureGateway = mock(ExposureGateway.class);
         final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
 
         final CustomerCoreProfile existingProfile = new CustomerCoreProfile(
-                "CUST-UPD",
+                "CUST-BAL",
                 "Morgan",
                 "Davis",
                 "WEALTH",
@@ -143,60 +142,103 @@ class CustomerProfileServiceTest {
                 new BigDecimal("100000.00")
         );
 
-        final UpdateCustomerProfileInput input = new UpdateCustomerProfileInput(
-                "CUST-UPD",
-                "Morgan",
-                "Davis-Wilson",
-                null,
-                null,
-                new BigDecimal("150000.00")
-        );
+        final BigDecimal newBalance = new BigDecimal("150000.00");
 
-        when(customerCoreGateway.fetchCustomerProfile("CUST-UPD")).thenReturn(existingProfile);
+        when(customerCoreGateway.fetchCustomerProfile("CUST-BAL")).thenReturn(existingProfile);
         when(customerCoreGateway.updateCustomerProfile(org.mockito.ArgumentMatchers.any(CustomerCoreProfile.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(customerCoreGateway.fetchCustomerProfile("CUST-UPD")).thenReturn(new CustomerCoreProfile(
-                "CUST-UPD",
+        when(customerCoreGateway.fetchCustomerProfile("CUST-BAL")).thenReturn(new CustomerCoreProfile(
+                "CUST-BAL",
                 "Morgan",
-                "Davis-Wilson",
+                "Davis",
                 "WEALTH",
                 "USD",
-                new BigDecimal("150000.00")
+                newBalance
         ));
-        when(exposureGateway.fetchExposures("CUST-UPD")).thenReturn(List.of());
+        when(exposureGateway.fetchExposures("CUST-BAL")).thenReturn(List.of());
 
-        final CustomerProfileView result = service.updateCustomerProfile(input);
+        final CustomerProfileView result = service.updateAvailableBalance("CUST-BAL", newBalance);
 
         assertAll(
-                () -> assertEquals("CUST-UPD", result.getCustomerId()),
-                () -> assertEquals("Morgan Davis-Wilson", result.getFullName()),
+                () -> assertEquals("CUST-BAL", result.getCustomerId()),
+                () -> assertEquals("Morgan Davis", result.getFullName()),
                 () -> assertEquals("WEALTH", result.getSegment()),
                 () -> assertEquals("USD", result.getBaseCurrency()),
-                () -> assertEquals(new BigDecimal("150000.00"), result.getAvailableBalance())
+                () -> assertEquals(newBalance, result.getAvailableBalance())
         );
         verify(customerCoreGateway).updateCustomerProfile(org.mockito.ArgumentMatchers.any(CustomerCoreProfile.class));
     }
 
     @Test
-    void shouldRejectUpdateForNonExistentCustomer() {
+    void shouldUpdateName() {
         final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
         final ExposureGateway exposureGateway = mock(ExposureGateway.class);
         final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
 
-        final UpdateCustomerProfileInput input = new UpdateCustomerProfileInput(
-                "CUST-MISSING",
-                "Unknown",
-                "User",
-                null,
-                null,
-                null
+        final CustomerCoreProfile existingProfile = new CustomerCoreProfile(
+                "CUST-NAME",
+                "Morgan",
+                "Davis",
+                "WEALTH",
+                "USD",
+                new BigDecimal("100000.00")
         );
+
+        final String newGivenName = "Morgan";
+        final String newFamilyName = "Davis-Wilson";
+
+        when(customerCoreGateway.fetchCustomerProfile("CUST-NAME")).thenReturn(existingProfile);
+        when(customerCoreGateway.updateCustomerProfile(org.mockito.ArgumentMatchers.any(CustomerCoreProfile.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(customerCoreGateway.fetchCustomerProfile("CUST-NAME")).thenReturn(new CustomerCoreProfile(
+                "CUST-NAME",
+                newGivenName,
+                newFamilyName,
+                "WEALTH",
+                "USD",
+                new BigDecimal("100000.00")
+        ));
+        when(exposureGateway.fetchExposures("CUST-NAME")).thenReturn(List.of());
+
+        final CustomerProfileView result = service.updateName("CUST-NAME", newGivenName, newFamilyName);
+
+        assertAll(
+                () -> assertEquals("CUST-NAME", result.getCustomerId()),
+                () -> assertEquals("Morgan Davis-Wilson", result.getFullName()),
+                () -> assertEquals("WEALTH", result.getSegment()),
+                () -> assertEquals("USD", result.getBaseCurrency()),
+                () -> assertEquals(new BigDecimal("100000.00"), result.getAvailableBalance())
+        );
+        verify(customerCoreGateway).updateCustomerProfile(org.mockito.ArgumentMatchers.any(CustomerCoreProfile.class));
+    }
+
+    @Test
+    void shouldRejectUpdateAvailableBalanceForNonExistentCustomer() {
+        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
+        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
+        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
 
         when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
 
         final IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> service.updateCustomerProfile(input)
+                () -> service.updateAvailableBalance("CUST-MISSING", new BigDecimal("100.00"))
+        );
+
+        assertEquals("Customer profile not found: CUST-MISSING", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectUpdateNameForNonExistentCustomer() {
+        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
+        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
+        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
+
+        when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
+
+        final IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> service.updateName("CUST-MISSING", "Unknown", "User")
         );
 
         assertEquals("Customer profile not found: CUST-MISSING", exception.getMessage());

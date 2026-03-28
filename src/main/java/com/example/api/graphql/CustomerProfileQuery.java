@@ -3,8 +3,8 @@ package com.example.api.graphql;
 import com.example.api.application.CustomerProfileService;
 import com.example.api.model.CreateCustomerProfileInput;
 import com.example.api.model.CustomerProfileView;
-import com.example.api.model.UpdateCustomerProfileInput;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.math.BigDecimal;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.Name;
@@ -35,10 +35,20 @@ public class CustomerProfileQuery {
         return customerProfileService.createCustomerProfile(input);
     }
 
-    @Mutation("updateCustomerProfile")
-    public CustomerProfileView updateCustomerProfile(
-            final UpdateCustomerProfileInput input
+    @Mutation("updateAvailableBalance")
+    public CustomerProfileView updateAvailableBalance(
+            @Name("customerId") final String customerId,
+            @Name("availableBalance") final BigDecimal availableBalance
     ) {
-        return customerProfileService.updateCustomerProfile(input);
+        return customerProfileService.updateAvailableBalance(customerId, availableBalance);
+    }
+
+    @Mutation("updateName")
+    public CustomerProfileView updateName(
+            @Name("customerId") final String customerId,
+            @Name("givenName") final String givenName,
+            @Name("familyName") final String familyName
+    ) {
+        return customerProfileService.updateName(customerId, givenName, familyName);
     }
 }
