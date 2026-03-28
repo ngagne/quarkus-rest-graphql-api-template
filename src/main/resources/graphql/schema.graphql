@@ -1,39 +1,147 @@
 scalar BigDecimal
 
-"""
-Aggregated customer profile assembled from multiple downstream systems
-"""
 type Query {
+  """
+  Retrieve the aggregated profile for a specific customer.
+  Combines data from multiple downstream systems to provide a complete view.
+  Returns null if no profile exists for the given customer ID.
+  """
   customerProfile(customerId: String!): CustomerProfileView
 }
 
 type Mutation {
+  """
+  Create a new customer profile with the provided information.
+  Initializes the profile with identity details, segment classification,
+  base currency, and initial balance. Returns the newly created profile.
+  """
   createCustomerProfile(input: CreateCustomerProfileInput!): CustomerProfileView!
+
+  """
+  Update the available balance for a customer's primary account.
+  This mutation adjusts the liquid balance available for transactions.
+  Returns the updated profile with recalculated exposure metrics.
+  """
   updateAvailableBalance(customerId: String!, availableBalance: BigDecimal!): CustomerProfileView!
+
+  """
+  Update the customer's legal name (given name and family name).
+  The fullName field in CustomerProfileView will be automatically recomputed.
+  Returns the updated profile with the new name information.
+  """
   updateName(customerId: String!, givenName: String!, familyName: String!): CustomerProfileView!
 }
 
+"""
+Input payload for creating a new customer profile.
+All fields are required as they represent core identity and financial attributes.
+"""
 input CreateCustomerProfileInput {
+  """
+  Unique identifier for the customer, typically from the source of record system.
+  Used as the primary key for all profile operations.
+  """
   customerId: String!
+
+  """
+  Customer's given name (first name) as it appears on official documents.
+  """
   givenName: String!
+
+  """
+  Customer's family name (last name/surname) as it appears on official documents.
+  """
   familyName: String!
+
+  """
+  Customer segmentation classification (e.g., RETAIL, PRIVATE, INSTITUTIONAL).
+  Determines service tier, pricing, and available products.
+  """
   segment: String!
+
+  """
+  ISO 4217 currency code for the customer's primary operating currency.
+  Used as the base currency for balance reporting and exposure calculations.
+  """
   baseCurrency: String!
+
+  """
+  Initial available balance in the base currency.
+  Represents liquid funds available for immediate use.
+  """
   availableBalance: BigDecimal!
 }
 
+"""
+Comprehensive view of a customer's profile, aggregating identity,
+financial positions, and risk exposures from multiple downstream systems.
+"""
 type CustomerProfileView {
+  """
+  Unique identifier for the customer. Matches the customerId used in queries and mutations.
+  """
   customerId: String!
+
+  """
+  Customer's full legal name, computed as the concatenation of givenName and familyName.
+  Null if name has not been set or is unavailable from downstream systems.
+  """
   fullName: String
+
+  """
+  Customer segmentation classification (e.g., RETAIL, PRIVATE, INSTITUTIONAL).
+  Null if segment has not been determined or is unavailable.
+  """
   segment: String
+
+  """
+  ISO 4217 currency code for the customer's primary operating currency.
+  Null if base currency has not been set or is unavailable.
+  """
   baseCurrency: String
+
+  """
+  Current available balance in the base currency.
+  Represents liquid funds available for transactions and withdrawals.
+  Null if balance data is unavailable from downstream systems.
+  """
   availableBalance: BigDecimal
+
+  """
+  Total credit exposure across all products in the base currency.
+  Aggregated from all product exposures, converted to baseCurrency.
+  Null if exposure data is unavailable or cannot be computed.
+  """
   totalExposure: BigDecimal
+
+  """
+  Detailed breakdown of exposure by product.
+  Each entry represents a distinct financial product with its own currency and notional amount.
+  Empty list if no product exposures exist for this customer.
+  """
   exposures: [ProductExposure!]!
 }
 
+"""
+Represents a customer's exposure to a specific financial product.
+Each product may have its own currency and notional amount.
+"""
 type ProductExposure {
+  """
+  Internal product code identifying the financial instrument or service.
+  Examples: MMF (Money Market Fund), LOAN, DEPOSIT, DERIVATIVE.
+  """
   productCode: String!
+
+  """
+  ISO 4217 currency code for this specific product exposure.
+  May differ from the customer's baseCurrency.
+  """
   currency: String!
+
+  """
+  Notional amount of the exposure in the product's currency.
+  For assets, this is positive; for liabilities, interpretation depends on product type.
+  """
   notional: BigDecimal!
 }

@@ -32,6 +32,7 @@ paths:
           schema:
             type: string
             maxLength: 64
+          example: "CUST-12345"
       responses:
         '200':
           description: OK
@@ -39,12 +40,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerProfileView'
+              example:
+                customerId: "CUST-12345"
+                fullName: "John Smith"
+                segment: "PRIVATE"
+                baseCurrency: "USD"
+                availableBalance: 1250000.50
+                totalExposure: 3500000.00
+                exposures:
+                  - productCode: "MMF"
+                    currency: "USD"
+                    notional: 500000.00
+                  - productCode: "LOAN"
+                    currency: "EUR"
+                    notional: 2000000.00
+                  - productCode: "DEPOSIT"
+                    currency: "GBP"
+                    notional: 1000000.00
         '404':
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                code: "NOT_FOUND"
+                message: "Customer profile not found for customerId: CUST-12345"
+                violations: []
     put:
       description: Update an existing customer profile with the provided fields.
       tags:
@@ -59,12 +81,20 @@ paths:
           schema:
             type: string
             maxLength: 64
+          example: "CUST-12345"
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateCustomerProfileRequest'
+            example:
+              customerId: "CUST-12345"
+              givenName: "Jane"
+              familyName: "Doe"
+              segment: "INSTITUTIONAL"
+              baseCurrency: "EUR"
+              availableBalance: 5000000.00
       responses:
         '200':
           description: OK
@@ -72,18 +102,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerProfileView'
+              example:
+                customerId: "CUST-12345"
+                fullName: "Jane Doe"
+                segment: "INSTITUTIONAL"
+                baseCurrency: "EUR"
+                availableBalance: 5000000.00
+                totalExposure: 7500000.00
+                exposures:
+                  - productCode: "MMF"
+                    currency: "EUR"
+                    notional: 2500000.00
+                  - productCode: "DERIVATIVE"
+                    currency: "USD"
+                    notional: 5000000.00
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                code: "VALIDATION_ERROR"
+                message: "Request validation failed"
+                violations:
+                  - field: "availableBalance"
+                    message: "must be greater than or equal to 0"
+                  - field: "baseCurrency"
+                    message: "must be a valid ISO 4217 currency code"
         '404':
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                code: "NOT_FOUND"
+                message: "Customer profile not found for customerId: CUST-12345"
+                violations: []
   /api/customers/profile:
     post:
       description: Create a new customer profile.
@@ -97,6 +153,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateCustomerProfileRequest'
+            example:
+              customerId: "CUST-67890"
+              givenName: "Alice"
+              familyName: "Johnson"
+              segment: "RETAIL"
+              baseCurrency: "GBP"
+              availableBalance: 75000.25
       responses:
         '201':
           description: Created
@@ -104,18 +167,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerProfileView'
+              example:
+                customerId: "CUST-67890"
+                fullName: "Alice Johnson"
+                segment: "RETAIL"
+                baseCurrency: "GBP"
+                availableBalance: 75000.25
+                totalExposure: 75000.25
+                exposures:
+                  - productCode: "DEPOSIT"
+                    currency: "GBP"
+                    notional: 75000.25
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                code: "VALIDATION_ERROR"
+                message: "Request validation failed"
+                violations:
+                  - field: "customerId"
+                    message: "must not be blank"
+                  - field: "baseCurrency"
+                    message: "must be a valid ISO 4217 currency code"
         '409':
           description: Conflict
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                code: "CONFLICT"
+                message: "Customer profile already exists for customerId: CUST-67890"
+                violations: []
 components:
   schemas:
     CreateCustomerProfileRequest:
@@ -140,6 +226,13 @@ components:
           type: string
         availableBalance:
           type: number
+      example:
+        customerId: "CUST-67890"
+        givenName: "Alice"
+        familyName: "Johnson"
+        segment: "RETAIL"
+        baseCurrency: "GBP"
+        availableBalance: 75000.25
     UpdateCustomerProfileRequest:
       type: object
       required:
@@ -157,6 +250,13 @@ components:
           type: string
         availableBalance:
           type: number
+      example:
+        customerId: "CUST-12345"
+        givenName: "Jane"
+        familyName: "Doe"
+        segment: "INSTITUTIONAL"
+        baseCurrency: "EUR"
+        availableBalance: 5000000.00
     ApiErrorResponse:
       type: object
       required:
@@ -172,6 +272,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApiViolation'
+      example:
+        code: "VALIDATION_ERROR"
+        message: "Request validation failed"
+        violations:
+          - field: "availableBalance"
+            message: "must be greater than or equal to 0"
+          - field: "baseCurrency"
+            message: "must be a valid ISO 4217 currency code"
     ApiViolation:
       type: object
       required:
@@ -182,6 +290,9 @@ components:
           type: string
         message:
           type: string
+      example:
+        field: "availableBalance"
+        message: "must be greater than or equal to 0"
     CustomerProfileView:
       type: object
       required:
@@ -204,6 +315,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProductExposure'
+      example:
+        customerId: "CUST-12345"
+        fullName: "John Smith"
+        segment: "PRIVATE"
+        baseCurrency: "USD"
+        availableBalance: 1250000.50
+        totalExposure: 3500000.00
+        exposures:
+          - productCode: "MMF"
+            currency: "USD"
+            notional: 500000.00
+          - productCode: "LOAN"
+            currency: "EUR"
+            notional: 2000000.00
+          - productCode: "DEPOSIT"
+            currency: "GBP"
+            notional: 1000000.00
     ProductExposure:
       type: object
       required:
@@ -217,3 +345,7 @@ components:
           type: string
         notional:
           type: number
+      example:
+        productCode: "MMF"
+        currency: "USD"
+        notional: 500000.00
