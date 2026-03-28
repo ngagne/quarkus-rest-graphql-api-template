@@ -171,7 +171,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Post-process generated OpenAPI interfaces to add missing imports -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -206,43 +205,24 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Post-process generated OpenAPI interfaces to add missing model imports -->
+            <!-- Add missing model imports to generated OpenAPI interfaces -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>add-productexposure-import</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <executable>sed</executable>
-                            <arguments>
-                                <argument>-i.bak</argument>
-                                <argument>/import com.example.api.model.CustomerProfileView;/a\
-import com.example.api.model.ProductExposure;
-</argument>
-                                <argument>${project.build.directory}/generated-sources/openapi/src/gen/java/com/example/api/rest/generated/CustomerProfileApi.java</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>cleanup-backup-files</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>find</executable>
-                            <arguments>
-                                <argument>${project.build.directory}/generated-sources/openapi</argument>
-                                <argument>-name</argument>
-                                <argument>*.bak</argument>
-                                <argument>-delete</argument>
-                            </arguments>
+                            <target>
+                                <replace file="${project.build.directory}/generated-sources/openapi/src/gen/java/com/example/api/rest/generated/CustomerProfileApi.java"
+                                         token="import com.example.api.model.CustomerProfileView;"
+                                         value="import com.example.api.model.CustomerProfileView;&#10;import com.example.api.model.ProductExposure;"/>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
