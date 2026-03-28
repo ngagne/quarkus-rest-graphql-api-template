@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.downstream.ExposureGateway;
 import com.example.api.model.CustomerCoreProfile;
-import com.example.api.model.CustomerProfileView;
+import com.example.api.graphql.generated.CustomerProfileView;
 import com.example.api.model.ProductExposure;
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,13 +40,13 @@ class CustomerProfileServiceTest {
         final CustomerProfileView result = service.getCustomerProfile("CUST-001");
 
         assertAll(
-                () -> assertEquals("CUST-001", result.customerId()),
-                () -> assertEquals("Jordan Lee", result.fullName()),
-                () -> assertEquals("INSTITUTIONAL", result.segment()),
-                () -> assertEquals("USD", result.baseCurrency()),
-                () -> assertEquals(new BigDecimal("5000000.00"), result.availableBalance()),
-                () -> assertEquals(new BigDecimal("1500000.00"), result.totalExposure()),
-                () -> assertEquals(2, result.exposures().size())
+                () -> assertEquals("CUST-001", result.getCustomerId()),
+                () -> assertEquals("Jordan Lee", result.getFullName()),
+                () -> assertEquals("INSTITUTIONAL", result.getSegment()),
+                () -> assertEquals("USD", result.getBaseCurrency()),
+                () -> assertEquals(new BigDecimal("5000000.00"), result.getAvailableBalance()),
+                () -> assertEquals(new BigDecimal("1500000.00"), result.getTotalExposure()),
+                () -> assertEquals(2, result.getExposures().size())
         );
     }
 
@@ -68,7 +68,7 @@ class CustomerProfileServiceTest {
 
         final CustomerProfileView result = service.getCustomerProfile("  CUST-TRIM  ");
 
-        assertEquals("CUST-TRIM", result.customerId());
+        assertEquals("CUST-TRIM", result.getCustomerId());
         verify(customerCoreGateway).fetchCustomerProfile("CUST-TRIM");
         verify(exposureGateway).fetchExposures("CUST-TRIM");
     }

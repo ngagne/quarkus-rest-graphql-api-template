@@ -3,12 +3,13 @@ package com.example.api.application;
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.downstream.ExposureGateway;
 import com.example.api.model.CustomerCoreProfile;
-import com.example.api.model.CustomerProfileView;
-import com.example.api.model.ProductExposure;
+import com.example.api.graphql.generated.CustomerProfileView;
+import com.example.api.graphql.generated.ProductExposure;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ApplicationScoped
@@ -31,12 +32,17 @@ public class CustomerProfileService {
                 customerCoreGateway.fetchCustomerProfile(normalizedCustomerId),
                 "customerCoreGateway returned null"
         );
-        final List<ProductExposure> exposures = List.copyOf(Objects.requireNonNull(
+        final List<com.example.api.model.ProductExposure> modelExposures = Objects.requireNonNull(
                 exposureGateway.fetchExposures(normalizedCustomerId),
                 "exposureGateway returned null"
-        ));
-        final BigDecimal totalExposure = exposures.stream()
-                .map(ProductExposure::notional)
+        );
+        
+        final List<ProductExposure> exposures = modelExposures.stream()
+                .map(e -> new ProductExposure(e.productCode(), e.currency(), e.notional()))
+                .collect(Collectors.toList());
+
+        final BigDecimal totalExposure = modelExposures.stream()
+                .map(com.example.api.model.ProductExposure::notional)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new CustomerProfileView(

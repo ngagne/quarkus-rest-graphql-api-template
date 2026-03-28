@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.downstream.ExposureGateway;
 import com.example.api.model.CustomerCoreProfile;
-import com.example.api.model.CustomerProfileView;
+import com.example.api.graphql.generated.CustomerProfileView;
 import com.example.api.model.ProductExposure;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -52,11 +52,11 @@ class CustomerProfileResourceTest {
                 .as(CustomerProfileView.class);
 
         assertAll(
-                () -> assertEquals("CUST-REST", response.customerId()),
-                () -> assertEquals("Alex Morgan", response.fullName()),
-                () -> assertEquals("WEALTH", response.segment()),
-                () -> assertEquals(new BigDecimal("750000.00"), response.availableBalance()),
-                () -> assertEquals(new BigDecimal("350000.00"), response.totalExposure())
+                () -> assertEquals("CUST-REST", response.getCustomerId()),
+                () -> assertEquals("Alex Morgan", response.getFullName()),
+                () -> assertEquals("WEALTH", response.getSegment()),
+                () -> assertEquals(new BigDecimal("750000.00"), response.getAvailableBalance()),
+                () -> assertEquals(new BigDecimal("350000.00"), response.getTotalExposure())
         );
     }
 

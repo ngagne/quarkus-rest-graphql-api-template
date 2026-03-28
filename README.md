@@ -1,10 +1,10 @@
 # Quarkus API Template
 
-Barebones Quarkus 3.34.1 template for Java 21 teams building REST and GraphQL microservices. The starter stays intentionally small, but it is shaped around a common financial-domain use case: orchestrating multiple downstream calls, mapping the results into a consumer-friendly contract, and returning that through a stable API.
+Barebones Quarkus 3.34.1 template for Java 17 teams building REST and GraphQL microservices. The starter stays intentionally small, but it is shaped around a common financial-domain use case: orchestrating multiple downstream calls, mapping the results into a consumer-friendly contract, and returning that through a stable API.
 
 ## What is included
 
-- Java 21
+- Java 17
 - Quarkus 3.34.1
 - Maven
 - REST endpoint support with Jackson
@@ -17,6 +17,31 @@ Barebones Quarkus 3.34.1 template for Java 21 teams building REST and GraphQL mi
 - Checkstyle
 - Quarkus JUnit 5, REST Assured, and Mockito-based tests
 - Dockerfile and Docker Compose for local development
+
+## Design-first API development
+
+This project uses a design-first approach for both REST and GraphQL APIs. The schemas are the source of truth for the API contracts.
+
+### GraphQL Schema
+Located at `src/main/resources/graphql/schema.graphql`.
+The `graphql-codegen-maven-plugin` generates:
+- Data models (POJOs) in `com.example.api.graphql.generated`.
+- Service interfaces in `com.example.api.graphql.generated`.
+
+### OpenAPI Specification
+Located at `src/main/resources/openapi/openapi.yaml`.
+The `openapi-generator-maven-plugin` generates:
+- REST interfaces in `com.example.api.rest.generated`.
+- It reuses the data models generated from the GraphQL schema to ensure consistency across both API flavors.
+
+### Generating Code
+Run the following command to generate (or refresh) the API interfaces and models:
+
+```bash
+mvn generate-sources
+```
+
+Generated code is located in `target/generated-sources/graphql` and `target/generated-sources/openapi`.
 
 ## Template philosophy
 
@@ -43,9 +68,9 @@ src/main/java/com/example/api
 
 - `application`: orchestration and mapping logic
 - `downstream`: gateway interfaces and starter stub implementations
-- `rest`: REST API surface
-- `graphql`: GraphQL API surface
-- `model`: shared API and downstream DTOs
+- `rest`: REST API implementation (implements generated OpenAPI interfaces)
+- `graphql`: GraphQL API implementation (implements generated GraphQL interfaces)
+- `model`: internal business models and downstream DTOs (API models are generated)
 
 ## Endpoints
 
@@ -79,11 +104,11 @@ curl http://localhost:8080/graphql \
 
 ### Prerequisites
 
-- JDK 21 for local Maven builds
+- JDK 17 for local Maven builds
 - Maven 3.9+
 - Docker Desktop or compatible Docker runtime for container-based runs
 
-The build now fails during `validate` if it is run with Java other than 21, so teams get a fast, clear setup error instead of a compiler failure later in the lifecycle.
+The build now fails during `validate` if it is run with Java other than 17, so teams get a fast, clear setup error instead of a compiler failure later in the lifecycle.
 
 ### Dev mode
 

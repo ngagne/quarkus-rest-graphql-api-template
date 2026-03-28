@@ -1,18 +1,16 @@
 package com.example.api.graphql;
 
 import com.example.api.application.CustomerProfileService;
-import com.example.api.model.CustomerProfileView;
+import com.example.api.graphql.generated.CustomerProfileView;
+import com.example.api.graphql.generated.QueryQueryResolver;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.eclipse.microprofile.graphql.Description;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.graphql.Query;
 
 @GraphQLApi
 @ApplicationScoped
-public class CustomerProfileQuery {
+public class CustomerProfileQuery implements QueryQueryResolver {
 
     private final CustomerProfileService customerProfileService;
 
@@ -20,12 +18,10 @@ public class CustomerProfileQuery {
         this.customerProfileService = customerProfileService;
     }
 
+    @Override
     @Query("customerProfile")
-    @Description("Aggregated customer profile assembled from multiple downstream systems")
     public CustomerProfileView customerProfile(
             @Name("customerId")
-            @NotBlank
-            @Size(max = 64)
             final String customerId
     ) {
         return customerProfileService.getCustomerProfile(customerId);

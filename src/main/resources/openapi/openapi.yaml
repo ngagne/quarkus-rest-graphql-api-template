@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Customer Profile API
+  version: 1.0.0
+paths:
+  /api/customers/{customerId}/profile:
+    get:
+      tags:
+        - CustomerProfile
+      summary: Get an aggregated customer profile
+      operationId: getCustomerProfile
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Opaque customer identifier
+          schema:
+            type: string
+            maxLength: 64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileView'
+components:
+  schemas:
+    CustomerProfileView:
+      type: object
+      required:
+        - customerId
+        - exposures
+      properties:
+        customerId:
+          type: string
+        fullName:
+          type: string
+        segment:
+          type: string
+        baseCurrency:
+          type: string
+        availableBalance:
+          type: number
+          format: decimal
+        totalExposure:
+          type: number
+          format: decimal
+        exposures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductExposure'
+    ProductExposure:
+      type: object
+      required:
+        - productCode
+        - currency
+        - notional
+      properties:
+        productCode:
+          type: string
+        currency:
+          type: string
+        notional:
+          type: number
+          format: decimal

@@ -1,0 +1,24 @@
+scalar BigDecimal
+
+"""
+Aggregated customer profile assembled from multiple downstream systems
+"""
+type Query {
+  customerProfile(customerId: String!): CustomerProfileView
+}
+
+type CustomerProfileView {
+  customerId: String!
+  fullName: String
+  segment: String
+  baseCurrency: String
+  availableBalance: BigDecimal
+  totalExposure: BigDecimal
+  exposures: [ProductExposure!]!
+}
+
+type ProductExposure {
+  productCode: String!
+  currency: String!
+  notional: BigDecimal!
+}

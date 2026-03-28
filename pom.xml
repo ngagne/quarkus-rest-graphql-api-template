@@ -13,7 +13,7 @@
     <properties>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
         <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
         <maven.checkstyle.plugin.version>3.5.0</maven.checkstyle.plugin.version>
         <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
@@ -84,6 +84,99 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>io.github.kobylynskyi</groupId>
+                <artifactId>graphql-codegen-maven-plugin</artifactId>
+                <version>5.10.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <graphqlSchemas>
+                                <includePattern>schema\.graphql</includePattern>
+                            </graphqlSchemas>
+                            <outputDir>${project.build.directory}/generated-sources/graphql</outputDir>
+                            <packageName>com.example.api.graphql.generated</packageName>
+                            <configurationFiles>
+                                <configurationFile>src/main/resources/graphql/codegen-config.json</configurationFile>
+                            </configurationFiles>
+                            <customTypesMapping>
+                                <BigDecimal>java.math.BigDecimal</BigDecimal>
+                                <Float>java.math.BigDecimal</Float>
+                            </customTypesMapping>
+                            <generateClient>false</generateClient>
+                            <generateApis>true</generateApis>
+                            <apiNameSuffix>QueryResolver</apiNameSuffix>
+                            <typeResolverSuffix>TypeResolver</typeResolverSuffix>
+                            <generateModelsForRootTypes>true</generateModelsForRootTypes>
+                            <generateImmutableModels>true</generateImmutableModels>
+                            <generateToString>true</generateToString>
+                            <generateEqualsAndHashCode>true</generateEqualsAndHashCode>
+                            <addGeneratedAnnotation>true</addGeneratedAnnotation>
+                            <generatedAnnotation>jakarta.annotation.Generated</generatedAnnotation>
+                            <modelValidationAnnotation>jakarta.validation.constraints.NotNull</modelValidationAnnotation>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.10.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/openapi.yaml</inputSpec>
+                            <generatorName>jaxrs-spec</generatorName>
+                            <output>${project.build.directory}/generated-sources/openapi</output>
+                            <apiPackage>com.example.api.rest.generated</apiPackage>
+                            <modelPackage>com.example.api.graphql.generated</modelPackage>
+                            <generateModels>false</generateModels>
+                            <generateModelTests>false</generateModelTests>
+                            <generateModelDocumentation>false</generateModelDocumentation>
+                            <generateApiTests>false</generateApiTests>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <returnResponse>false</returnResponse>
+                                <useTags>true</useTags>
+                                <useJakartaEe>true</useJakartaEe>
+                                <useBeanValidation>true</useBeanValidation>
+                                <useSwaggerAnnotations>false</useSwaggerAnnotations>
+                            </configOptions>
+                            <importMappings>
+                                <importMapping>CustomerProfileView=com.example.api.graphql.generated.CustomerProfileView</importMapping>
+                                <importMapping>ProductExposure=com.example.api.graphql.generated.ProductExposure</importMapping>
+                            </importMappings>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
                 <version>${quarkus.platform.version}</version>
@@ -129,8 +222,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[21,22)</version>
-                                    <message>Build this template with Java 21.</message>
+                                    <version>[17,22)</version>
+                                    <message>Build this template with Java 17+.</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.9,)</version>

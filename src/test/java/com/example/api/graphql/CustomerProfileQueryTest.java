@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.downstream.ExposureGateway;
 import com.example.api.model.CustomerCoreProfile;
-import com.example.api.model.CustomerProfileView;
+import com.example.api.graphql.generated.CustomerProfileView;
 import com.example.api.model.ProductExposure;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -63,12 +63,12 @@ class CustomerProfileQueryTest {
         final CustomerProfileView response = jsonPath.getObject("data.customerProfile", CustomerProfileView.class);
 
         assertAll(
-                () -> assertEquals("CUST-GQL", response.customerId()),
-                () -> assertEquals("Casey Nguyen", response.fullName()),
-                () -> assertEquals("PAYMENTS", response.segment()),
-                () -> assertEquals(0, new BigDecimal("910000.00").compareTo(response.availableBalance())),
-                () -> assertEquals(0, new BigDecimal("50000.00").compareTo(response.totalExposure())),
-                () -> assertEquals(2, response.exposures().size())
+                () -> assertEquals("CUST-GQL", response.getCustomerId()),
+                () -> assertEquals("Casey Nguyen", response.getFullName()),
+                () -> assertEquals("PAYMENTS", response.getSegment()),
+                () -> assertEquals(0, new BigDecimal("910000.00").compareTo(response.getAvailableBalance())),
+                () -> assertEquals(0, new BigDecimal("50000.00").compareTo(response.getTotalExposure())),
+                () -> assertEquals(2, response.getExposures().size())
         );
     }
 }
