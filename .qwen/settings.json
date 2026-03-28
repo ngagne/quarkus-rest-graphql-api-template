@@ -32,7 +32,10 @@
       "Bash(kill *)",
       "Bash(true)",
       "Bash(javap *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(xargs *)",
+      "Bash(rm *)",
+      "Bash(mkdir *)"
     ]
   },
   "$version": 3

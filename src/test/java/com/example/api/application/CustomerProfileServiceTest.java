@@ -3,7 +3,6 @@ package com.example.api.application;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,18 +12,28 @@ import com.example.api.model.CreateCustomerProfileInput;
 import com.example.api.model.CustomerProfileView;
 import com.example.api.model.CustomerCoreProfile;
 import com.example.api.model.ProductExposure;
+import com.example.api.model.UpdateCustomerProfileInput;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+@QuarkusTest
 class CustomerProfileServiceTest {
+
+    @InjectMock
+    CustomerCoreGateway customerCoreGateway;
+
+    @InjectMock
+    ExposureGateway exposureGateway;
+
+    @Inject
+    CustomerProfileService service;
 
     @Test
     void shouldAssembleProfileFromDownstreamResponses() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         when(customerCoreGateway.fetchCustomerProfile("CUST-001")).thenReturn(new CustomerCoreProfile(
                 "CUST-001",
                 "Jordan",
@@ -53,10 +62,6 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldTrimCustomerIdBeforeCallingDownstreams() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         when(customerCoreGateway.fetchCustomerProfile("CUST-TRIM")).thenReturn(new CustomerCoreProfile(
                 "CUST-TRIM",
                 "Robin",
@@ -76,10 +81,6 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldRejectBlankCustomerId() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         final InvalidRequestException exception = assertThrows(
                 InvalidRequestException.class,
                 () -> service.getCustomerProfile("   ")
@@ -90,10 +91,6 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldCreateCustomerProfile() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         final CreateCustomerProfileInput input = new CreateCustomerProfileInput(
                 "CUST-NEW",
                 "Taylor",
@@ -129,10 +126,6 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldUpdateAvailableBalance() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         final CustomerCoreProfile existingProfile = new CustomerCoreProfile(
                 "CUST-BAL",
                 "Morgan",
@@ -171,10 +164,6 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldUpdateName() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         final CustomerCoreProfile existingProfile = new CustomerCoreProfile(
                 "CUST-NAME",
                 "Morgan",
@@ -214,10 +203,6 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldRejectUpdateAvailableBalanceForNonExistentCustomer() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
 
         final IllegalStateException exception = assertThrows(
@@ -230,10 +215,6 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldRejectUpdateNameForNonExistentCustomer() {
-        final CustomerCoreGateway customerCoreGateway = mock(CustomerCoreGateway.class);
-        final ExposureGateway exposureGateway = mock(ExposureGateway.class);
-        final CustomerProfileService service = new CustomerProfileService(customerCoreGateway, exposureGateway);
-
         when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
 
         final IllegalStateException exception = assertThrows(
@@ -242,5 +223,141 @@ class CustomerProfileServiceTest {
         );
 
         assertEquals("Customer profile not found: CUST-MISSING", exception.getMessage());
+    }
+
+    @Test
+    void shouldUpdateCustomerProfileWithPartialFields() {
+        final CustomerCoreProfile existingProfile = new CustomerCoreProfile(
+                "CUST-PARTIAL",
+                "Morgan",
+                "Davis",
+                "WEALTH",
+                "USD",
+                new BigDecimal("100000.00")
+        );
+
+        final UpdateCustomerProfileInput input = new UpdateCustomerProfileInput(
+                "CUST-PARTIAL",
+                null,
+                "Davis-Wilson",
+                null,
+                null,
+                null
+        );
+
+        when(customerCoreGateway.fetchCustomerProfile("CUST-PARTIAL")).thenReturn(existingProfile);
+        when(customerCoreGateway.updateCustomerProfile(org.mockito.ArgumentMatchers.any(CustomerCoreProfile.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(customerCoreGateway.fetchCustomerProfile("CUST-PARTIAL")).thenReturn(new CustomerCoreProfile(
+                "CUST-PARTIAL",
+                "Morgan",
+                "Davis-Wilson",
+                "WEALTH",
+                "USD",
+                new BigDecimal("100000.00")
+        ));
+        when(exposureGateway.fetchExposures("CUST-PARTIAL")).thenReturn(List.of());
+
+        final CustomerProfileView result = service.updateCustomerProfile(input);
+
+        assertAll(
+                () -> assertEquals("CUST-PARTIAL", result.getCustomerId()),
+                () -> assertEquals("Morgan Davis-Wilson", result.getFullName()),
+                () -> assertEquals("WEALTH", result.getSegment()),
+                () -> assertEquals("USD", result.getBaseCurrency()),
+                () -> assertEquals(new BigDecimal("100000.00"), result.getAvailableBalance())
+        );
+        verify(customerCoreGateway).updateCustomerProfile(org.mockito.ArgumentMatchers.any(CustomerCoreProfile.class));
+    }
+
+    @Test
+    void shouldRejectUpdateCustomerProfileForNonExistentCustomer() {
+        final UpdateCustomerProfileInput input = new UpdateCustomerProfileInput(
+                "CUST-MISSING",
+                "John",
+                "Doe",
+                "RETAIL",
+                "USD",
+                new BigDecimal("1000.00")
+        );
+
+        when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
+
+        final IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> service.updateCustomerProfile(input)
+        );
+
+        assertEquals("Customer profile not found: CUST-MISSING", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectCreateWithNullInput() {
+        final NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> service.createCustomerProfile(null)
+        );
+
+        assertEquals("input must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectUpdateAvailableBalanceWithNullCustomerId() {
+        final NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> service.updateAvailableBalance(null, new BigDecimal("100.00"))
+        );
+
+        assertEquals("customerId must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectUpdateAvailableBalanceWithNullBalance() {
+        final NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> service.updateAvailableBalance("CUST-001", null)
+        );
+
+        assertEquals("availableBalance must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectUpdateNameWithNullCustomerId() {
+        final NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> service.updateName(null, "John", "Doe")
+        );
+
+        assertEquals("customerId must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectUpdateNameWithNullGivenName() {
+        final NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> service.updateName("CUST-001", null, "Doe")
+        );
+
+        assertEquals("givenName must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectUpdateNameWithNullFamilyName() {
+        final NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> service.updateName("CUST-001", "John", null)
+        );
+
+        assertEquals("familyName must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldRejectUpdateCustomerProfileWithNullInput() {
+        final NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> service.updateCustomerProfile(null)
+        );
+
+        assertEquals("input must not be null", exception.getMessage());
     }
 }
