@@ -39,6 +39,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerProfileView'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
     put:
       description: Update an existing customer profile with the provided fields.
       tags:
@@ -92,8 +98,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateCustomerProfileRequest'
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Created
           content:
             application/json:
               schema:

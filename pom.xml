@@ -148,7 +148,7 @@
                             <generateSupportingFiles>false</generateSupportingFiles>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
-                                <returnResponse>false</returnResponse>
+                                <returnResponse>true</returnResponse>
                                 <useTags>true</useTags>
                                 <useJakartaEe>true</useJakartaEe>
                                 <useBeanValidation>true</useBeanValidation>

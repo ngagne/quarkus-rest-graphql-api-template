@@ -108,7 +108,7 @@ class CustomerProfileResourceTest {
                 .when()
                 .post("/api/customers/profile")
                 .then()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(CustomerProfileView.class);
 

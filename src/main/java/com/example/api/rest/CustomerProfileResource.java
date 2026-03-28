@@ -7,6 +7,7 @@ import com.example.api.model.CustomerProfileView;
 import com.example.api.model.UpdateCustomerProfileInput;
 import com.example.api.model.UpdateCustomerProfileRequest;
 import com.example.api.rest.generated.CustomerProfileApi;
+import jakarta.ws.rs.core.Response;
 
 public class CustomerProfileResource implements CustomerProfileApi {
 
@@ -17,12 +18,13 @@ public class CustomerProfileResource implements CustomerProfileApi {
     }
 
     @Override
-    public CustomerProfileView getCustomerProfile(final String customerId) {
-        return customerProfileService.getCustomerProfile(customerId);
+    public Response getCustomerProfile(final String customerId) {
+        final CustomerProfileView profile = customerProfileService.getCustomerProfile(customerId);
+        return Response.ok(profile).build();
     }
 
     @Override
-    public CustomerProfileView createCustomerProfile(final CreateCustomerProfileRequest request) {
+    public Response createCustomerProfile(final CreateCustomerProfileRequest request) {
         final CreateCustomerProfileInput input = new CreateCustomerProfileInput(
                 request.getCustomerId(),
                 request.getGivenName(),
@@ -31,12 +33,13 @@ public class CustomerProfileResource implements CustomerProfileApi {
                 request.getBaseCurrency(),
                 request.getAvailableBalance()
         );
-        return customerProfileService.createCustomerProfile(input);
+        final CustomerProfileView profile = customerProfileService.createCustomerProfile(input);
+        return Response.status(Response.Status.CREATED).entity(profile).build();
     }
 
     @Override
-    public CustomerProfileView updateCustomerProfile(final String customerId,
-                                                     final UpdateCustomerProfileRequest request) {
+    public Response updateCustomerProfile(final String customerId,
+                                          final UpdateCustomerProfileRequest request) {
         final UpdateCustomerProfileInput input = new UpdateCustomerProfileInput(
                 request.getCustomerId(),
                 request.getGivenName(),
@@ -45,6 +48,7 @@ public class CustomerProfileResource implements CustomerProfileApi {
                 request.getBaseCurrency(),
                 request.getAvailableBalance()
         );
-        return customerProfileService.updateCustomerProfile(input);
+        final CustomerProfileView profile = customerProfileService.updateCustomerProfile(input);
+        return Response.ok(profile).build();
     }
 }
