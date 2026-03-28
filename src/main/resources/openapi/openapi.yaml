@@ -134,7 +134,6 @@ components:
           type: string
         availableBalance:
           type: number
-          format: decimal
     UpdateCustomerProfileRequest:
       type: object
       required:
@@ -152,7 +151,6 @@ components:
           type: string
         availableBalance:
           type: number
-          format: decimal
     ApiErrorResponse:
       type: object
       required:
@@ -190,10 +188,8 @@ components:
           type: string
         availableBalance:
           type: number
-          format: decimal
         totalExposure:
           type: number
-          format: decimal
         exposures:
           type: array
           items:
@@ -211,4 +207,3 @@ components:
           type: string
         notional:
           type: number
-          format: decimal
