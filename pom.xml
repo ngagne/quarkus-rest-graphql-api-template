@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
@@ -69,6 +67,10 @@
             <version>1.6.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-logging-json</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit</artifactId>
@@ -224,9 +226,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <replace file="${project.build.directory}/generated-sources/openapi/src/gen/java/com/example/api/rest/generated/CustomerProfileApi.java"
-                                         token="import com.example.api.model.CustomerProfileView;"
-                                         value="import com.example.api.model.CustomerProfileView;&#10;import com.example.api.model.ProductExposure;"/>
+                                <replace file="${project.build.directory}/generated-sources/openapi/src/gen/java/com/example/api/rest/generated/CustomerProfileApi.java" token="import com.example.api.model.CustomerProfileView;" value="import com.example.api.model.CustomerProfileView;&#xA;import com.example.api.model.ProductExposure;" />
                             </target>
                         </configuration>
                     </execution>
