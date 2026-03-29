@@ -6,12 +6,16 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Provider
 public class CorsExceptionMapper implements ExceptionMapper<Throwable> {
+
+    @ConfigProperty(name = "app.cors.allowed-origins", defaultValue = "*")
+    String allowedOrigins;
 
     @Context
     private HttpHeaders headers;
@@ -34,7 +38,7 @@ public class CorsExceptionMapper implements ExceptionMapper<Throwable> {
     }
 
     private void addCorsHeaders(final Response.ResponseBuilder builder) {
-        builder.header("Access-Control-Allow-Origin", "*");
+        builder.header("Access-Control-Allow-Origin", allowedOrigins);
         builder.header("Access-Control-Allow-Methods",
                 "GET, POST, PUT, DELETE, OPTIONS");
         builder.header("Access-Control-Allow-Headers",
