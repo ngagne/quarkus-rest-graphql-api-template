@@ -402,11 +402,20 @@ CORS is enabled by default to support web and mobile clients accessing the API f
 - Exposed headers: `Content-Disposition`
 - Max age: 24 hours
 
-For production deployments, customize `src/main/java/com/example/api/rest/CorsFilter.java` to restrict allowed origins to specific domains:
+The allowed origins can be configured via the `app.cors.allowed-origins` property:
 
-```java
-responseContext.getHeaders().putSingle("Access-Control-Allow-Origin", "https://app.example.com");
+```properties
+# application.properties
+app.cors.allowed-origins=https://app.example.com
 ```
+
+Or via environment variable:
+
+```bash
+APP_CORS_ALLOWED_ORIGINS=https://app.example.com
+```
+
+For production deployments, restrict allowed origins to specific domains by setting the property above.
 
 ## API starter conventions
 
