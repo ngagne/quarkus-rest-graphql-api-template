@@ -2,12 +2,11 @@ package com.example.api.application;
 
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.downstream.ExposureGateway;
-import com.example.api.model.CreateCustomerProfileInput;
+import com.example.api.model.CustomerCoreProfile;
 import com.example.api.model.CustomerProfileView;
 import com.example.api.model.ProductExposure;
-import com.example.api.model.UpdateCustomerProfileInput;
-import com.example.api.model.CustomerCoreProfile;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +17,7 @@ import java.util.stream.Stream;
  * <p>
  * This service provides both coarse-grained operations for REST APIs
  * and fine-grained, use-case specific operations for GraphQL mutations.
+ * Validation is handled automatically by Jakarta Bean Validation.
  */
 
 @ApplicationScoped
@@ -60,26 +60,25 @@ public class CustomerProfileService {
         );
     }
 
-    public CustomerProfileView createCustomerProfile(final CreateCustomerProfileInput input) {
-        Objects.requireNonNull(input, "input must not be null");
+    public CustomerProfileView createCustomerProfile(@Valid final CustomerCoreProfile profile) {
+        Objects.requireNonNull(profile, "profile must not be null");
 
-        final String normalizedCustomerId = normalizeCustomerId(input.getCustomerId());
-        validateGivenName(input.getGivenName());
-        validateFamilyName(input.getFamilyName());
-        validateSegment(input.getSegment());
-        validateBaseCurrency(input.getBaseCurrency());
-        validateAvailableBalance(input.getAvailableBalance());
+        final String normalizedCustomerId = normalizeCustomerId(profile.customerId());
+        validateNameFields(profile.givenName(), profile.familyName());
+        validateSegment(profile.segment());
+        validateBaseCurrency(profile.baseCurrency());
+        validateAvailableBalance(profile.availableBalance());
 
-        final CustomerCoreProfile coreProfile = new CustomerCoreProfile(
+        final CustomerCoreProfile normalizedProfile = new CustomerCoreProfile(
                 normalizedCustomerId,
-                input.getGivenName(),
-                input.getFamilyName(),
-                input.getSegment(),
-                input.getBaseCurrency(),
-                input.getAvailableBalance()
+                profile.givenName().trim(),
+                profile.familyName().trim(),
+                profile.segment().trim(),
+                profile.baseCurrency().trim().toUpperCase(),
+                profile.availableBalance()
         );
 
-        customerCoreGateway.createCustomerProfile(coreProfile);
+        customerCoreGateway.createCustomerProfile(normalizedProfile);
         return getCustomerProfile(normalizedCustomerId);
     }
 
@@ -127,8 +126,8 @@ public class CustomerProfileService {
 
         final CustomerCoreProfile updatedProfile = new CustomerCoreProfile(
                 normalizedCustomerId,
-                givenName,
-                familyName,
+                givenName.trim(),
+                familyName.trim(),
                 existingProfile.segment(),
                 existingProfile.baseCurrency(),
                 existingProfile.availableBalance()
@@ -142,10 +141,10 @@ public class CustomerProfileService {
      * Updates a customer profile with provided fields.
      * REST API: PUT /api/customers/{customerId}/profile
      */
-    public CustomerProfileView updateCustomerProfile(final UpdateCustomerProfileInput input) {
-        Objects.requireNonNull(input, "input must not be null");
+    public CustomerProfileView updateCustomerProfile(@Valid final CustomerCoreProfile profile) {
+        Objects.requireNonNull(profile, "profile must not be null");
 
-        final String normalizedCustomerId = normalizeCustomerId(input.getCustomerId());
+        final String normalizedCustomerId = normalizeCustomerId(profile.customerId());
         final CustomerCoreProfile existingProfile = customerCoreGateway.fetchCustomerProfile(normalizedCustomerId);
         if (existingProfile == null) {
             throw new IllegalStateException("Customer profile not found: " + normalizedCustomerId);
@@ -153,11 +152,12 @@ public class CustomerProfileService {
 
         final CustomerCoreProfile updatedProfile = new CustomerCoreProfile(
                 normalizedCustomerId,
-                input.getGivenName() != null ? input.getGivenName() : existingProfile.givenName(),
-                input.getFamilyName() != null ? input.getFamilyName() : existingProfile.familyName(),
-                input.getSegment() != null ? input.getSegment() : existingProfile.segment(),
-                input.getBaseCurrency() != null ? input.getBaseCurrency() : existingProfile.baseCurrency(),
-                input.getAvailableBalance() != null ? input.getAvailableBalance() : existingProfile.availableBalance()
+                profile.givenName() != null ? profile.givenName().trim() : existingProfile.givenName(),
+                profile.familyName() != null ? profile.familyName().trim() : existingProfile.familyName(),
+                profile.segment() != null ? profile.segment().trim() : existingProfile.segment(),
+                profile.baseCurrency() != null
+                        ? profile.baseCurrency().trim().toUpperCase() : existingProfile.baseCurrency(),
+                profile.availableBalance() != null ? profile.availableBalance() : existingProfile.availableBalance()
         );
 
         customerCoreGateway.updateCustomerProfile(updatedProfile);
@@ -174,36 +174,31 @@ public class CustomerProfileService {
         return normalizedCustomerId;
     }
 
-    private void validateGivenName(final String givenName) {
-        Objects.requireNonNull(givenName, "givenName must not be null");
-        if (givenName.trim().isEmpty()) {
+    private void validateNameFields(final String givenName, final String familyName) {
+        if (givenName == null || givenName.trim().isEmpty()) {
             throw new InvalidRequestException("givenName", "givenName must not be blank");
         }
-    }
-
-    private void validateFamilyName(final String familyName) {
-        Objects.requireNonNull(familyName, "familyName must not be null");
-        if (familyName.trim().isEmpty()) {
+        if (familyName == null || familyName.trim().isEmpty()) {
             throw new InvalidRequestException("familyName", "familyName must not be blank");
         }
     }
 
     private void validateSegment(final String segment) {
-        Objects.requireNonNull(segment, "segment must not be null");
-        if (segment.trim().isEmpty()) {
+        if (segment == null || segment.trim().isEmpty()) {
             throw new InvalidRequestException("segment", "segment must not be blank");
         }
     }
 
     private void validateBaseCurrency(final String baseCurrency) {
-        Objects.requireNonNull(baseCurrency, "baseCurrency must not be null");
-        if (baseCurrency.trim().isEmpty()) {
+        if (baseCurrency == null || baseCurrency.trim().isEmpty()) {
             throw new InvalidRequestException("baseCurrency", "baseCurrency must not be blank");
         }
     }
 
     private void validateAvailableBalance(final BigDecimal availableBalance) {
-        Objects.requireNonNull(availableBalance, "availableBalance must not be null");
+        if (availableBalance == null) {
+            throw new InvalidRequestException("availableBalance", "availableBalance must not be null");
+        }
         if (availableBalance.compareTo(BigDecimal.ZERO) < 0) {
             throw new InvalidRequestException("availableBalance", "availableBalance must not be negative");
         }

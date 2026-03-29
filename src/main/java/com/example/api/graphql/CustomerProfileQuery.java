@@ -1,6 +1,7 @@
 package com.example.api.graphql;
 
 import com.example.api.application.CustomerProfileService;
+import com.example.api.mapper.CustomerProfileMapper;
 import com.example.api.model.CreateCustomerProfileInput;
 import com.example.api.model.CustomerProfileView;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,6 +16,7 @@ import org.eclipse.microprofile.graphql.Query;
 public class CustomerProfileQuery {
 
     private final CustomerProfileService customerProfileService;
+    private final CustomerProfileMapper mapper = CustomerProfileMapper.INSTANCE;
 
     public CustomerProfileQuery(final CustomerProfileService customerProfileService) {
         this.customerProfileService = customerProfileService;
@@ -32,7 +34,8 @@ public class CustomerProfileQuery {
     public CustomerProfileView createCustomerProfile(
             final CreateCustomerProfileInput input
     ) {
-        return customerProfileService.createCustomerProfile(input);
+        return customerProfileService.createCustomerProfile(
+                mapper.toCustomerCoreProfile(input));
     }
 
     @Mutation("updateAvailableBalance")

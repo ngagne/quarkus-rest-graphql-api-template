@@ -216,16 +216,25 @@ components:
       properties:
         customerId:
           type: string
+          minLength: 1
+          maxLength: 64
         givenName:
           type: string
+          minLength: 1
         familyName:
           type: string
+          minLength: 1
         segment:
           type: string
+          minLength: 1
         baseCurrency:
           type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
         availableBalance:
           type: number
+          minimum: 0
       example:
         customerId: "CUST-67890"
         givenName: "Alice"
@@ -240,16 +249,25 @@ components:
       properties:
         customerId:
           type: string
+          minLength: 1
+          maxLength: 64
         givenName:
           type: string
+          minLength: 1
         familyName:
           type: string
+          minLength: 1
         segment:
           type: string
+          minLength: 1
         baseCurrency:
           type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
         availableBalance:
           type: number
+          minimum: 0
       example:
         customerId: "CUST-12345"
         givenName: "Jane"

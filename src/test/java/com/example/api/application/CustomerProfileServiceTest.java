@@ -8,11 +8,9 @@ import static org.mockito.Mockito.when;
 
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.downstream.ExposureGateway;
-import com.example.api.model.CreateCustomerProfileInput;
 import com.example.api.model.CustomerProfileView;
 import com.example.api.model.CustomerCoreProfile;
 import com.example.api.model.ProductExposure;
-import com.example.api.model.UpdateCustomerProfileInput;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -91,7 +89,7 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldCreateCustomerProfile() {
-        final CreateCustomerProfileInput input = new CreateCustomerProfileInput(
+        final CustomerCoreProfile input = new CustomerCoreProfile(
                 "CUST-NEW",
                 "Taylor",
                 "Kim",
@@ -236,7 +234,7 @@ class CustomerProfileServiceTest {
                 new BigDecimal("100000.00")
         );
 
-        final UpdateCustomerProfileInput input = new UpdateCustomerProfileInput(
+        final CustomerCoreProfile input = new CustomerCoreProfile(
                 "CUST-PARTIAL",
                 null,
                 "Davis-Wilson",
@@ -272,7 +270,7 @@ class CustomerProfileServiceTest {
 
     @Test
     void shouldRejectUpdateCustomerProfileForNonExistentCustomer() {
-        final UpdateCustomerProfileInput input = new UpdateCustomerProfileInput(
+        final CustomerCoreProfile input = new CustomerCoreProfile(
                 "CUST-MISSING",
                 "John",
                 "Doe",
@@ -298,7 +296,7 @@ class CustomerProfileServiceTest {
                 () -> service.createCustomerProfile(null)
         );
 
-        assertEquals("input must not be null", exception.getMessage());
+        assertEquals("profile must not be null", exception.getMessage());
     }
 
     @Test
@@ -358,6 +356,6 @@ class CustomerProfileServiceTest {
                 () -> service.updateCustomerProfile(null)
         );
 
-        assertEquals("input must not be null", exception.getMessage());
+        assertEquals("profile must not be null", exception.getMessage());
     }
 }
