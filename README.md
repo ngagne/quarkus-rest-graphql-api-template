@@ -72,6 +72,141 @@ src/main/java/com/example/api
 - `graphql`: GraphQL API implementation (implements generated GraphQL interfaces)
 - `model`: internal business models and downstream DTOs (API models are generated)
 
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Clients["Client Applications"]
+        REST_CLIENT["REST Client"]
+        GraphQL_CLIENT["GraphQL Client"]
+    end
+
+    subgraph API_Layer["API Layer"]
+        subgraph REST["REST API"]
+            CustomerProfileResource["CustomerProfileResource\n(REST Controller)"]
+            ExceptionMappers["Exception Mappers"]
+        end
+        
+        subgraph GraphQL["GraphQL API"]
+            CustomerProfileQuery["CustomerProfileQuery\n(GraphQL API)"]
+        end
+    end
+
+    subgraph Generated["Generated Code"]
+        REST_API["OpenAPI Interfaces\n(com.example.api.rest.generated)"]
+        GraphQL_TYPES["GraphQL Types\n(com.example.api.graphql.generated)"]
+    end
+
+    subgraph Application["Application Layer"]
+        CustomerProfileService["CustomerProfileService\n(Orchestration & Business Logic)"]
+        CustomerProfileMapper["CustomerProfileMapper\n(MapStruct)"]
+        Exceptions["Application Exceptions"]
+    end
+
+    subgraph Domain["Domain Models"]
+        CustomerCoreProfile["CustomerCoreProfile"]
+        ProductExposure["ProductExposure"]
+        CustomerProfileView["CustomerProfileView"]
+    end
+
+    subgraph Downstream["Downstream Integration"]
+        subgraph Gateways["Gateway Interfaces"]
+            CustomerCoreGateway["CustomerCoreGateway"]
+            ExposureGateway["ExposureGateway"]
+        end
+        
+        subgraph Stubs["Stub Implementations"]
+            StubCustomerCore["StubCustomerCoreGateway\n(In-Memory Storage)"]
+            StubExposure["StubExposureGateway\n(Hardcoded Data)"]
+        end
+    end
+
+    subgraph Design["Design-First Contracts"]
+        OpenAPI["OpenAPI Spec\n(openapi.yaml)"]
+        GraphQL_Schema["GraphQL Schema\n(schema.graphql)"]
+    end
+
+    %% Client to API connections
+    REST_CLIENT -->|"GET/POST/PUT /api/..."| CustomerProfileResource
+    GraphQL_CLIENT -->|"POST /graphql"| CustomerProfileQuery
+
+    %% API layer to generated interfaces
+    CustomerProfileResource -.implements.-> REST_API
+    CustomerProfileQuery -.implements.-> GraphQL_TYPES
+
+    %% Design to generated (build-time)
+    OpenAPI -.generates.-> REST_API
+    GraphQL_Schema -.generates.-> GraphQL_TYPES
+
+    %% API to Application layer
+    CustomerProfileResource --> CustomerProfileService
+    CustomerProfileQuery --> CustomerProfileService
+
+    %% Application layer internal
+    CustomerProfileService --> CustomerProfileMapper
+    CustomerProfileService --> Exceptions
+
+    %% Application to Domain
+    CustomerProfileService --> CustomerCoreProfile
+    CustomerProfileService --> ProductExposure
+    CustomerProfileService --> CustomerProfileView
+    CustomerProfileMapper --> CustomerCoreProfile
+    CustomerProfileMapper --> CustomerProfileView
+
+    %% Application to Downstream
+    CustomerProfileService --> CustomerCoreGateway
+    CustomerProfileService --> ExposureGateway
+
+    %% Gateway implementations
+    CustomerCoreGateway -.implemented by.-> StubCustomerCore
+    ExposureGateway -.implemented by.-> StubExposure
+
+    %% Styling
+    classDef client fill:#dbeafe,stroke:#1e40af,color:#000000
+    classDef api fill:#ffedd5,stroke:#c2410c,color:#000000
+    classDef generated fill:#f3f4f6,stroke:#4b5563,stroke-dasharray: 5 5,color:#000000
+    classDef application fill:#dcfce7,stroke:#15803d,color:#000000
+    classDef domain fill:#fce7f3,stroke:#be185d,color:#000000
+    classDef downstream fill:#fef3c7,stroke:#b45309,color:#000000
+    classDef design fill:#ede9fe,stroke:#6d28d9,color:#000000
+
+    class REST_CLIENT,GraphQL_CLIENT client
+    class CustomerProfileResource,CustomerProfileQuery,ExceptionMappers api
+    class REST_API,GraphQL_TYPES generated
+    class CustomerProfileService,CustomerProfileMapper,Exceptions application
+    class CustomerCoreProfile,ProductExposure,CustomerProfileView domain
+    class CustomerCoreGateway,ExposureGateway,StubCustomerCore,StubExposure downstream
+    class OpenAPI,GraphQL_Schema design
+```
+
+### Architecture Layers
+
+1. **Design Contracts** (Source of Truth)
+   - OpenAPI specification defines REST endpoints
+   - GraphQL schema defines queries and mutations
+   - Code generation produces interfaces and DTOs at build time
+
+2. **API Layer** (Thin Controllers)
+   - REST controllers implement generated OpenAPI interfaces
+   - GraphQL API implements generated GraphQL interfaces
+   - Exception mappers provide consistent error responses
+   - Delegate all business logic to application layer
+
+3. **Application Layer** (Orchestration)
+   - `CustomerProfileService` orchestrates downstream calls
+   - `CustomerProfileMapper` transforms between DTOs and domain models
+   - Application exceptions provide predictable error handling
+
+4. **Domain Models** (Business Objects)
+   - Internal records and DTOs for business logic
+   - Immutable data structures
+   - Computed fields (e.g., `fullName`, `totalExposure`)
+
+5. **Downstream Integration** (Gateway Pattern)
+   - Gateway interfaces define integration contracts
+   - Stub implementations for local development
+   - Replace with REST clients, messaging, or SDKs in production
+
 ## Endpoints
 
 - REST:
