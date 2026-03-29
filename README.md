@@ -426,9 +426,201 @@ For production deployments, restrict allowed origins to specific domains by sett
 
 ## Next steps teams usually add
 
-- downstream REST clients and retries
 - request validation and domain-specific error handling
 - authn/authz
 - persistence or caching
 - contract tests for downstream dependencies
 - CI automation and deployment manifests
+
+## Extending the Template
+
+### Replacing Stub Gateways with REST Clients
+
+The template uses stub implementations for downstream gateways to enable local development without external dependencies. To replace a stub with a real REST client:
+
+**1. Use the provided REST client implementation**
+
+A reference REST client is provided at `com.example.api.downstream.rest.RestCustomerCoreGateway`. To activate it:
+
+```java
+// In StubCustomerCoreGateway.java
+@Deprecated
+@ApplicationScoped
+@jakarta.enterprise.inject.Alternative  // Mark stub as alternative
+public class StubCustomerCoreGateway implements CustomerCoreGateway {
+    // ...
+}
+
+// In RestCustomerCoreGateway.java  
+@ApplicationScoped
+// Remove @Alternative annotation to make this the default implementation
+public class RestCustomerCoreGateway implements CustomerCoreGateway {
+    // ...
+}
+```
+
+**2. Configure the downstream service URL**
+
+Add to `application.properties`:
+
+```properties
+# Downstream customer core service URL
+app.downstream.customer-core.base-url=http://customer-service:8080
+```
+
+Or via environment variable:
+
+```bash
+APP_DOWNSTREAM_CUSTOMER_CORE_BASE_URL=http://customer-service:8080
+```
+
+**3. Add resilience patterns (recommended)**
+
+For production use, add retry and circuit breaker patterns using SmallRye Fault Tolerance:
+
+```bash
+mvn add io.quarkus:quarkus-smallrye-fault-tolerance
+```
+
+Then enhance the REST client with retries:
+
+```java
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+
+@Retry(maxRetries = 3, delay = 100)
+@CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5)
+@Override
+public CustomerCoreProfile fetchCustomerProfile(final String customerId) {
+    // ... existing implementation
+}
+```
+
+**4. Add integration tests**
+
+Use Testcontainers to test the REST client against a real service:
+
+```java
+@QuarkusTest
+@Testcontainers
+class RestCustomerCoreGatewayTest {
+    
+    @Container
+    static GenericContainer<?> customerService = 
+        new GenericContainer<>("customer-service:latest")
+            .withExposedPorts(8080);
+    
+    @Test
+    void shouldFetchCustomerProfile() {
+        // Test implementation
+    }
+}
+```
+
+### Adding Persistence
+
+When you need to persist data beyond in-memory storage:
+
+**Option 1: Quarkus Hibernate ORM with Panache (Recommended)**
+
+```bash
+mvn add io.quarkus:quarkus-hibernate-orm-panache
+mvn add io.quarkus:quarkus-jdbc-postgresql  # or your preferred DB
+```
+
+Create a Panache entity:
+
+```java
+@Entity
+public class CustomerProfile extends PanacheEntity {
+    public String customerId;
+    public String givenName;
+    public String familyName;
+    public String segment;
+    public String baseCurrency;
+    public BigDecimal availableBalance;
+    
+    public static CustomerProfile findByCustomerId(String customerId) {
+        return find("customerId", customerId).firstResult();
+    }
+}
+```
+
+Configure database in `application.properties`:
+
+```properties
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/customers
+quarkus.datasource.username=postgres
+quarkus.datasource.password=postgres
+quarkus.hibernate-orm.database.generation=validate
+```
+
+**Option 2: Reactive Persistence**
+
+For reactive applications:
+
+```bash
+mvn add io.quarkus:quarkus-hibernate-reactive-panache
+mvn add io.quarkus:quarkus-reactive-pg-client
+```
+
+### Adding Authentication
+
+**Option 1: OIDC Authentication**
+
+```bash
+mvn add io.quarkus:quarkus-oidc
+```
+
+Configure in `application.properties`:
+
+```properties
+quarkus.oidc.auth-server-url=https://auth-server.com/realms/myrealm
+quarkus.oidc.client-id=my-api
+quarkus.oidc.credentials.secret=secret
+```
+
+**Option 2: JWT Token Validation**
+
+```bash
+mvn add io.quarkus:quarkus-smallrye-jwt
+```
+
+```properties
+mp.jwt.verify.publickey.location=publicKey.pem
+mp.jwt.verify.issuer=https://auth-server.com
+```
+
+### Testing Strategies
+
+**Integration Tests with Testcontainers**
+
+```java
+@QuarkusTest
+@Testcontainers
+class CustomerProfileIntegrationTest {
+    
+    @Container
+    static PostgreSQLContainer<?> postgres = 
+        new PostgreSQLContainer<>("postgres:15")
+            .withDatabaseName("test")
+            .withUsername("test")
+            .withPassword("test");
+    
+    @Test
+    @Transactional
+    void shouldCreateAndRetrieveProfile() {
+        // Test implementation
+    }
+}
+```
+
+**Contract Testing**
+
+Use Pact or similar for contract testing with downstream services:
+
+```bash
+mvn add au.com.dius.pact.consumer:pact-jvm-consumer-junit5:4.6.0
+```
+
