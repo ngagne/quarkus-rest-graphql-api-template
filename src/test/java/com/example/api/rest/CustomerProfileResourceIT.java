@@ -227,6 +227,113 @@ class CustomerProfileResourceIT {
     }
 
     @Test
+    void shouldRejectDuplicateCustomerProfile() {
+        final String customerId = "CUST-IT-DUP";
+
+        // First create the customer
+        final Map<String, Object> createRequest = Map.of(
+                "customerId", customerId,
+                "givenName", "John",
+                "familyName", "Doe",
+                "segment", "RETAIL",
+                "baseCurrency", "USD",
+                "availableBalance", 50000.00
+        );
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(createRequest)
+                .when()
+                .post("/v1/api/customers/profile")
+                .then()
+                .statusCode(201);
+
+        // Attempt to create the same customer again
+        given()
+                .contentType(ContentType.JSON)
+                .body(createRequest)
+                .when()
+                .post("/v1/api/customers/profile")
+                .then()
+                .statusCode(409)
+                .body("code", equalTo("CONFLICT"))
+                .body("message", equalTo("Customer profile already exists: " + customerId));
+    }
+
+    @Test
+    void shouldRejectCreateWithMissingRequiredFields() {
+        final Map<String, Object> requestBody = Map.of(
+                "customerId", "CUST-MISSING-FIELDS"
+        );
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(requestBody)
+                .when()
+                .post("/v1/api/customers/profile")
+                .then()
+                .statusCode(400)
+                .body("code", equalTo("VALIDATION_FAILED"))
+                .body("violations.field", hasItem("givenName"))
+                .body("violations.message", hasItem("must not be blank"));
+    }
+
+    @Test
+    void shouldRejectCreateWithNegativeBalance() {
+        final Map<String, Object> requestBody = Map.of(
+                "customerId", "CUST-NEG-BALANCE",
+                "givenName", "Test",
+                "familyName", "User",
+                "segment", "RETAIL",
+                "baseCurrency", "USD",
+                "availableBalance", -500.00
+        );
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(requestBody)
+                .when()
+                .post("/v1/api/customers/profile")
+                .then()
+                .statusCode(400)
+                .body("code", equalTo("VALIDATION_FAILED"))
+                .body("violations.field", hasItem("availableBalance"))
+                .body("violations.message", hasItem("availableBalance must be positive"));
+    }
+
+    @Test
+    void shouldRejectGetWithBlankCustomerId() {
+        given()
+                .pathParam("customerId", "  ")
+                .when()
+                .get("/v1/api/customers/{customerId}/profile")
+                .then()
+                .statusCode(400)
+                .body("code", equalTo("INVALID_REQUEST"))
+                .body("message", equalTo("customerId must not be blank"));
+    }
+
+    @Test
+    void shouldRejectUpdateWithNonExistentCustomer() {
+        final String customerId = "NON-EXISTENT-UPDATE";
+        final Map<String, Object> requestBody = Map.of(
+                "customerId", customerId,
+                "availableBalance", 10000.00
+        );
+
+        given()
+                .contentType(ContentType.JSON)
+                .pathParam("customerId", customerId)
+                .body(requestBody)
+                .when()
+                .put("/v1/api/customers/{customerId}/profile")
+                .then()
+                .statusCode(404)
+                .body("code", equalTo("NOT_FOUND"))
+                .body("message", equalTo("Customer profile not found: " + customerId));
+    }
+
+    @Test
     void shouldReturnHealthCheck() {
         given()
                 .when()
