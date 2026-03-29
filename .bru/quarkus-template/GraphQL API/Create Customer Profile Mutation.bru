@@ -1,0 +1,28 @@
+meta {
+  name: Create Customer Profile Mutation
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json {
+    "query": "mutation($input: CreateCustomerProfileInput!) {\n  createCustomerProfile(input: $input) {\n    customerId\n    fullName\n    segment\n    baseCurrency\n    availableBalance\n  }\n}",
+    "variables": {
+      "input": {
+        "customerId": "{{customerId}}",
+        "givenName": "Jane",
+        "familyName": "Smith",
+        "segment": "WEALTH",
+        "baseCurrency": "EUR",
+        "availableBalance": 100000.00
+      }
+    }
+  }
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+  customerId: CUST-002
+}

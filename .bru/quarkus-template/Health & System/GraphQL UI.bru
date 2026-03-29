@@ -1,0 +1,15 @@
+meta {
+  name: GraphQL UI
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/q/graphql-ui/
+  body: none
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+}

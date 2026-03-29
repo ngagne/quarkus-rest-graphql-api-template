@@ -1,0 +1,23 @@
+meta {
+  name: Update Name Mutation
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json {
+    "query": "mutation($customerId: String!, $givenName: String!, $familyName: String!) {\n  updateName(customerId: $customerId, givenName: $givenName, familyName: $familyName) {\n    customerId\n    fullName\n    segment\n    baseCurrency\n    availableBalance\n  }\n}",
+    "variables": {
+      "customerId": "{{customerId}}",
+      "givenName": "John",
+      "familyName": "Smith"
+    }
+  }
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+  customerId: CUST-001
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Update Customer Profile
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/customers/{{customerId}}/profile
+  body: json {
+    "customerId": "{{customerId}}",
+    "availableBalance": 75000.00
+  }
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+  customerId: CUST-001
+}

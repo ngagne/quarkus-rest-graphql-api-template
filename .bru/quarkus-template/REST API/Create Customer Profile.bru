@@ -1,0 +1,23 @@
+meta {
+  name: Create Customer Profile
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/customers/profile
+  body: json {
+    "customerId": "{{customerId}}",
+    "givenName": "John",
+    "familyName": "Doe",
+    "segment": "RETAIL",
+    "baseCurrency": "USD",
+    "availableBalance": 50000.00
+  }
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+  customerId: CUST-001
+}

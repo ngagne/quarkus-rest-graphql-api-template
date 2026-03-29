@@ -17,6 +17,21 @@ Barebones Quarkus 3.34.1 template for Java 17 teams building REST and GraphQL mi
 - Checkstyle
 - Quarkus JUnit 5, REST Assured, and Mockito-based tests
 - Dockerfile and Docker Compose for local development
+- Bruno API collection for local testing
+
+## Testing with Bruno
+
+A Bruno collection is included for testing all API endpoints. To use it:
+
+1. Install Bruno from https://www.usebruno.com/
+2. Open the `bruno/quarkus-template` folder in Bruno
+3. Start the application with `mvn quarkus:dev`
+4. Run requests from the Bruno collection
+
+The collection includes:
+- **REST API** - GET, POST, PUT endpoints for customer profiles
+- **GraphQL API** - Query and mutations for customer profiles
+- **Health & System** - Health checks, OpenAPI spec, Swagger UI, GraphQL UI
 
 ## Design-first API development
 

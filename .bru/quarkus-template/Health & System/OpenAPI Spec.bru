@@ -1,0 +1,15 @@
+meta {
+  name: OpenAPI Spec
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/q/openapi
+  body: none
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+}

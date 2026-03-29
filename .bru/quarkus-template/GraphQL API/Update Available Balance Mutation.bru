@@ -1,0 +1,22 @@
+meta {
+  name: Update Available Balance Mutation
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json {
+    "query": "mutation($customerId: String!, $availableBalance: BigDecimal!) {\n  updateAvailableBalance(customerId: $customerId, availableBalance: $availableBalance) {\n    customerId\n    fullName\n    segment\n    baseCurrency\n    availableBalance\n  }\n}",
+    "variables": {
+      "customerId": "{{customerId}}",
+      "availableBalance": 75000.00
+    }
+  }
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+  customerId: CUST-001
+}

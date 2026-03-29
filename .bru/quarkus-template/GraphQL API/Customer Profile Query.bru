@@ -1,0 +1,21 @@
+meta {
+  name: Customer Profile Query
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json {
+    "query": "query($customerId: String!) {\n  customerProfile(customerId: $customerId) {\n    customerId\n    fullName\n    segment\n    baseCurrency\n    availableBalance\n    totalExposure\n    exposures {\n      productCode\n      currency\n      notional\n    }\n  }\n}",
+    "variables": {
+      "customerId": "{{customerId}}"
+    }
+  }
+  auth: inherit
+}
+
+vars {
+  baseUrl: http://localhost:8080
+  customerId: CUST-001
+}
