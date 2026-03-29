@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.example.api.application.ConflictException;
+import com.example.api.application.ResourceNotFoundException;
 import com.example.api.model.CustomerCoreProfile;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -93,8 +95,8 @@ class StubCustomerCoreGatewayTest {
 
         gateway.createCustomerProfile(input);
 
-        final IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        final ConflictException exception = assertThrows(
+                ConflictException.class,
                 () -> gateway.createCustomerProfile(input)
         );
 
@@ -201,8 +203,8 @@ class StubCustomerCoreGatewayTest {
                 new BigDecimal("10000.00")
         );
 
-        final IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        final ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> gateway.updateCustomerProfile(update)
         );
 

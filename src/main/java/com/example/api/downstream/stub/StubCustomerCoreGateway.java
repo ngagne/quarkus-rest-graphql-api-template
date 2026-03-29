@@ -1,5 +1,7 @@
 package com.example.api.downstream.stub;
 
+import com.example.api.application.ConflictException;
+import com.example.api.application.ResourceNotFoundException;
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.model.CustomerCoreProfile;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -26,7 +28,7 @@ public class StubCustomerCoreGateway implements CustomerCoreGateway {
         Objects.requireNonNull(profile.customerId(), "customerId must not be null");
 
         if (profiles.containsKey(profile.customerId())) {
-            throw new IllegalStateException("Customer profile already exists: " + profile.customerId());
+            throw new ConflictException("Customer profile already exists: " + profile.customerId());
         }
 
         profiles.put(profile.customerId(), profile);
@@ -39,7 +41,7 @@ public class StubCustomerCoreGateway implements CustomerCoreGateway {
         Objects.requireNonNull(profile.customerId(), "customerId must not be null");
 
         if (!profiles.containsKey(profile.customerId())) {
-            throw new IllegalStateException("Customer profile not found: " + profile.customerId());
+            throw new ResourceNotFoundException("Customer profile not found: " + profile.customerId());
         }
 
         final CustomerCoreProfile existing = profiles.get(profile.customerId());

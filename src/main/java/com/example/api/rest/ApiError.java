@@ -15,4 +15,12 @@ public record ApiError(String code, String message, List<ApiViolation> violation
     public static ApiError validationFailed(final List<ApiViolation> violations) {
         return new ApiError("VALIDATION_FAILED", "Request validation failed", violations);
     }
+
+    public static ApiError notFound(final String message) {
+        return new ApiError("NOT_FOUND", message, List.of());
+    }
+
+    public static ApiError conflict(final String message) {
+        return new ApiError("CONFLICT", message, List.of());
+    }
 }

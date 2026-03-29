@@ -203,8 +203,8 @@ class CustomerProfileServiceTest {
     void shouldRejectUpdateAvailableBalanceForNonExistentCustomer() {
         when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
 
-        final IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        final ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> service.updateAvailableBalance("CUST-MISSING", new BigDecimal("100.00"))
         );
 
@@ -215,8 +215,8 @@ class CustomerProfileServiceTest {
     void shouldRejectUpdateNameForNonExistentCustomer() {
         when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
 
-        final IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        final ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> service.updateName("CUST-MISSING", "Unknown", "User")
         );
 
@@ -281,8 +281,8 @@ class CustomerProfileServiceTest {
 
         when(customerCoreGateway.fetchCustomerProfile("CUST-MISSING")).thenReturn(null);
 
-        final IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        final ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> service.updateCustomerProfile(input)
         );
 

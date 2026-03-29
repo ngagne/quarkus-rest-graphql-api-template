@@ -93,7 +93,7 @@ public class CustomerProfileService {
         final String normalizedCustomerId = normalizeCustomerId(customerId);
         final CustomerCoreProfile existingProfile = customerCoreGateway.fetchCustomerProfile(normalizedCustomerId);
         if (existingProfile == null) {
-            throw new IllegalStateException("Customer profile not found: " + normalizedCustomerId);
+            throw new ResourceNotFoundException("Customer profile not found: " + normalizedCustomerId);
         }
 
         final CustomerCoreProfile updatedProfile = new CustomerCoreProfile(
@@ -121,7 +121,7 @@ public class CustomerProfileService {
         final String normalizedCustomerId = normalizeCustomerId(customerId);
         final CustomerCoreProfile existingProfile = customerCoreGateway.fetchCustomerProfile(normalizedCustomerId);
         if (existingProfile == null) {
-            throw new IllegalStateException("Customer profile not found: " + normalizedCustomerId);
+            throw new ResourceNotFoundException("Customer profile not found: " + normalizedCustomerId);
         }
 
         final CustomerCoreProfile updatedProfile = new CustomerCoreProfile(
@@ -137,17 +137,13 @@ public class CustomerProfileService {
         return getCustomerProfile(normalizedCustomerId);
     }
 
-    /**
-     * Updates a customer profile with provided fields.
-     * REST API: PUT /api/customers/{customerId}/profile
-     */
-    public CustomerProfileView updateCustomerProfile(@Valid final CustomerCoreProfile profile) {
+    public CustomerProfileView updateCustomerProfile(final CustomerCoreProfile profile) {
         Objects.requireNonNull(profile, "profile must not be null");
 
         final String normalizedCustomerId = normalizeCustomerId(profile.customerId());
         final CustomerCoreProfile existingProfile = customerCoreGateway.fetchCustomerProfile(normalizedCustomerId);
         if (existingProfile == null) {
-            throw new IllegalStateException("Customer profile not found: " + normalizedCustomerId);
+            throw new ResourceNotFoundException("Customer profile not found: " + normalizedCustomerId);
         }
 
         final CustomerCoreProfile updatedProfile = new CustomerCoreProfile(
