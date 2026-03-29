@@ -13,24 +13,23 @@ import java.util.Objects;
 
 /**
  * REST implementation of CustomerCoreGateway.
- * 
+ *
  * This example shows how to replace the stub gateway with a real REST client.
  * Configure the downstream service URL via configuration:
- * 
+ *
  * <pre>
  * # application.properties
  * app.downstream.customer-core.base-url=http://localhost:8081
  * </pre>
- * 
+ *
  * To use this implementation:
  * 1. Add the @Alternative annotation to StubCustomerCoreGateway
  * 2. Remove @Alternative from this class
  * 3. Configure the downstream service URL
- * 
+ *
  * @see com.example.api.downstream.stub.StubCustomerCoreGateway
  */
 @ApplicationScoped
-@jakarta.annotation.Priority(jakarta.interceptor.Interceptor.Priority.LIBRARY_BEFORE)
 @jakarta.enterprise.inject.Alternative
 public class RestCustomerCoreGateway implements CustomerCoreGateway {
 

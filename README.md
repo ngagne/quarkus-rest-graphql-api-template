@@ -451,7 +451,7 @@ public class StubCustomerCoreGateway implements CustomerCoreGateway {
     // ...
 }
 
-// In RestCustomerCoreGateway.java  
+// In RestCustomerCoreGateway.java
 @ApplicationScoped
 // Remove @Alternative annotation to make this the default implementation
 public class RestCustomerCoreGateway implements CustomerCoreGateway {
@@ -473,6 +473,91 @@ Or via environment variable:
 ```bash
 APP_DOWNSTREAM_CUSTOMER_CORE_BASE_URL=http://customer-service:8080
 ```
+
+### Replacing Stub Gateways with GraphQL Clients
+
+Alternatively, if the downstream service exposes a GraphQL API, you can use the GraphQL client implementation:
+
+**1. Use the provided GraphQL client implementation**
+
+A reference GraphQL client is provided at `com.example.api.downstream.graphql.GraphQLCustomerCoreGateway`. To activate it:
+
+```java
+// In StubCustomerCoreGateway.java
+@Deprecated
+@ApplicationScoped
+@jakarta.enterprise.inject.Alternative  // Mark stub as alternative
+public class StubCustomerCoreGateway implements CustomerCoreGateway {
+    // ...
+}
+
+// In GraphQLCustomerCoreGateway.java
+@ApplicationScoped
+// Remove @Alternative annotation to make this the default implementation
+public class GraphQLCustomerCoreGateway implements CustomerCoreGateway {
+    // ...
+}
+```
+
+**2. Configure the downstream GraphQL service URL**
+
+Add to `application.properties`:
+
+```properties
+# Downstream customer core GraphQL service URL
+quarkus.smallrye-graphql-client.customer-core.url=http://customer-service:8081/graphql
+quarkus.smallrye-graphql-client.customer-core.token=<auth-token>  # Optional: for authenticated calls
+```
+
+Or via environment variable:
+
+```bash
+QUARKUS_SMALLRYE_GRAPHQL_CLIENT_CUSTOMER_CORE_URL=http://customer-service:8081/graphql
+```
+
+**3. Downstream GraphQL service schema**
+
+The GraphQL client expects the downstream service to expose the following operations:
+
+```graphql
+type Query {
+  customerProfile(customerId: String!): CustomerCoreProfile
+}
+
+type Mutation {
+  createCustomerProfile(input: CreateCustomerCoreProfileInput!): CustomerCoreProfile!
+  updateCustomerProfile(input: UpdateCustomerCoreProfileInput!): CustomerCoreProfile!
+}
+
+input CreateCustomerCoreProfileInput {
+  customerId: String!
+  givenName: String!
+  familyName: String!
+  segment: String!
+  baseCurrency: String!
+  availableBalance: BigDecimal!
+}
+
+input UpdateCustomerCoreProfileInput {
+  customerId: String!
+  givenName: String
+  familyName: String
+  segment: String
+  baseCurrency: String
+  availableBalance: BigDecimal
+}
+
+type CustomerCoreProfile {
+  customerId: String!
+  givenName: String!
+  familyName: String!
+  segment: String!
+  baseCurrency: String!
+  availableBalance: BigDecimal!
+}
+```
+
+The typesafe GraphQL client (`CustomerCoreGraphQLClient`) handles the mapping between your local domain models and the GraphQL operations.
 
 **3. Add resilience patterns (recommended)**
 

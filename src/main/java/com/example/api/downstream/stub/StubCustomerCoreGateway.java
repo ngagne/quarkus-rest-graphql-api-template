@@ -4,12 +4,14 @@ import com.example.api.application.ConflictException;
 import com.example.api.application.ResourceNotFoundException;
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.model.CustomerCoreProfile;
+import io.quarkus.arc.DefaultBean;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
+@DefaultBean
 public class StubCustomerCoreGateway implements CustomerCoreGateway {
 
     private final Map<String, CustomerCoreProfile> profiles = new ConcurrentHashMap<>();
