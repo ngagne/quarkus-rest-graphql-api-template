@@ -1,6 +1,9 @@
 package com.example.api.graphql;
 
+import com.example.api.application.ConflictException;
 import com.example.api.application.CustomerProfileService;
+import com.example.api.application.InvalidRequestException;
+import com.example.api.application.ResourceNotFoundException;
 import com.example.api.mapper.CustomerProfileMapper;
 import com.example.api.model.CreateCustomerProfileInput;
 import com.example.api.model.CustomerProfileView;
@@ -11,6 +14,12 @@ import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.graphql.Query;
 
+/**
+ * GraphQL API for customer profile operations.
+ * <p>
+ * Translates application-layer exceptions into GraphQL-specific exceptions
+ * to provide structured error responses with error codes.
+ */
 @GraphQLApi
 @ApplicationScoped
 public class CustomerProfileQuery {
@@ -29,15 +38,27 @@ public class CustomerProfileQuery {
             @Name("customerId")
             final String customerId
     ) {
-        return customerProfileService.getCustomerProfile(customerId);
+        try {
+            return customerProfileService.getCustomerProfile(customerId);
+        } catch (ResourceNotFoundException e) {
+            throw new GraphQLNotFoundException(e.getMessage());
+        } catch (InvalidRequestException e) {
+            throw new GraphQLInvalidRequestException(e.field(), e.getMessage());
+        }
     }
 
     @Mutation("createCustomerProfile")
     public CustomerProfileView createCustomerProfile(
             final CreateCustomerProfileInput input
     ) {
-        return customerProfileService.createCustomerProfile(
-                mapper.toCustomerCoreProfile(input));
+        try {
+            return customerProfileService.createCustomerProfile(
+                    mapper.toCustomerCoreProfile(input));
+        } catch (ConflictException e) {
+            throw new GraphQLConflictException(e.getMessage());
+        } catch (InvalidRequestException e) {
+            throw new GraphQLInvalidRequestException(e.field(), e.getMessage());
+        }
     }
 
     @Mutation("updateAvailableBalance")
@@ -45,7 +66,13 @@ public class CustomerProfileQuery {
             @Name("customerId") final String customerId,
             @Name("availableBalance") final BigDecimal availableBalance
     ) {
-        return customerProfileService.updateAvailableBalance(customerId, availableBalance);
+        try {
+            return customerProfileService.updateAvailableBalance(customerId, availableBalance);
+        } catch (ResourceNotFoundException e) {
+            throw new GraphQLNotFoundException(e.getMessage());
+        } catch (InvalidRequestException e) {
+            throw new GraphQLInvalidRequestException(e.field(), e.getMessage());
+        }
     }
 
     @Mutation("updateName")
@@ -54,6 +81,12 @@ public class CustomerProfileQuery {
             @Name("givenName") final String givenName,
             @Name("familyName") final String familyName
     ) {
-        return customerProfileService.updateName(customerId, givenName, familyName);
+        try {
+            return customerProfileService.updateName(customerId, givenName, familyName);
+        } catch (ResourceNotFoundException e) {
+            throw new GraphQLNotFoundException(e.getMessage());
+        } catch (InvalidRequestException e) {
+            throw new GraphQLInvalidRequestException(e.field(), e.getMessage());
+        }
     }
 }

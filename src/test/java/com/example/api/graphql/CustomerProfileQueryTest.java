@@ -349,4 +349,72 @@ class CustomerProfileQueryTest {
         assertNotNull(errors);
         assertTrue(errors.size() > 0, "Expected errors in response for non-existent customer");
     }
+
+    @Test
+    void shouldReturnNotFoundErrorCodeForNonExistentCustomer() {
+        when(customerCoreGateway.fetchCustomerProfile("MISSING-CUSTOMER")).thenReturn(null);
+
+        final String mutation = "mutation($customerId: String!, $availableBalance: BigDecimal!) { "
+                + "updateAvailableBalance(customerId: $customerId, availableBalance: $availableBalance) { "
+                + "customerId } }";
+        final JsonPath jsonPath = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "query", mutation,
+                        "variables", Map.of(
+                                "customerId", "MISSING-CUSTOMER",
+                                "availableBalance", 50000.00
+                        )
+                ))
+                .when()
+                .post("/graphql")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath();
+
+        final List<Map<String, Object>> errors = jsonPath.getList("errors");
+        assertNotNull(errors);
+        assertTrue(errors.size() > 0, "Expected errors in response");
+
+        final Map<String, Object> firstError = errors.get(0);
+        final Map<String, Object> extensions = (Map<String, Object>) firstError.get("extensions");
+        assertNotNull(extensions, "Expected extensions in error response");
+        assertEquals("com.example.api.graphql.GraphQLNotFoundException", extensions.get("exception"),
+                "Expected GraphQLNotFoundException in extensions");
+    }
+
+    @Test
+    void shouldReturnInvalidRequestErrorCodeForBlankCustomerId() {
+        final String mutation = "mutation($customerId: String!, $givenName: String!, "
+                + "$familyName: String!) { "
+                + "updateName(customerId: $customerId, givenName: $givenName, "
+                + "familyName: $familyName) { customerId } }";
+        final JsonPath jsonPath = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "query", mutation,
+                        "variables", Map.of(
+                                "customerId", "   ",
+                                "givenName", "Test",
+                                "familyName", "User"
+                        )
+                ))
+                .when()
+                .post("/graphql")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath();
+
+        final List<Map<String, Object>> errors = jsonPath.getList("errors");
+        assertNotNull(errors);
+        assertTrue(errors.size() > 0, "Expected errors in response");
+
+        final Map<String, Object> firstError = errors.get(0);
+        final Map<String, Object> extensions = (Map<String, Object>) firstError.get("extensions");
+        assertNotNull(extensions, "Expected extensions in error response");
+        assertEquals("com.example.api.graphql.GraphQLInvalidRequestException", extensions.get("exception"),
+                "Expected GraphQLInvalidRequestException in extensions");
+    }
 }
