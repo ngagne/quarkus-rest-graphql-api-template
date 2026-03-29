@@ -14,7 +14,7 @@
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
 | 1 | Add example REST client | 2026-03-29 | db3ac78 | ✅ | Inline |
-| 260329-h7b | Add example REST client to replace stub downstream gateway | 2026-03-29 | pending | Verified | [260329-h7b-add-example-rest-client-to-replace-stub-](./quick/260329-h7b-add-example-rest-client-to-replace-stub-/)|
+| 260329-h7b | Add example REST client to replace stub downstream gateway | 2026-03-29 | 0d2e9dd | Verified | [260329-h7b-add-example-rest-client-to-replace-stub-](./quick/260329-h7b-add-example-rest-client-to-replace-stub-/)|
 
 ## Blockers/Concerns
 
