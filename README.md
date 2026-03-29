@@ -436,43 +436,30 @@ For production deployments, restrict allowed origins to specific domains by sett
 
 ### Replacing Stub Gateways with REST Clients
 
-The template uses stub implementations for downstream gateways to enable local development without external dependencies. To replace a stub with a real REST client:
+See **[DOWNSTREAM_SERVICES.md](DOWNSTREAM_SERVICES.md)** for a comprehensive guide on:
+- Enabling REST client implementations
+- Creating new REST clients
+- Advanced configuration (timeouts, retries, circuit breakers)
+- Error handling patterns
+- Testing strategies
 
-**1. Use the provided REST client implementation**
+The template provides declarative REST client implementations for downstream gateways:
+- `RestCustomerCoreGateway` + `CustomerCoreRestClient`
+- `RestExposureGateway` + `ExposureRestClient`
 
-A reference REST client is provided at `com.example.api.downstream.rest.RestCustomerCoreGateway`. To activate it:
+These use Quarkus REST Client (MicroProfile REST Client) for type-safe HTTP calls with automatic configuration, resilience patterns, and observability integration.
 
-```java
-// In StubCustomerCoreGateway.java
-@Deprecated
-@ApplicationScoped
-@jakarta.enterprise.inject.Alternative  // Mark stub as alternative
-public class StubCustomerCoreGateway implements CustomerCoreGateway {
-    // ...
-}
+**Quick start:**
 
-// In RestCustomerCoreGateway.java
-@ApplicationScoped
-// Remove @Alternative annotation to make this the default implementation
-public class RestCustomerCoreGateway implements CustomerCoreGateway {
-    // ...
-}
-```
-
-**2. Configure the downstream service URL**
-
-Add to `application.properties`:
-
+1. Configure the downstream service URL in `application.properties`:
 ```properties
-# Downstream customer core service URL
-app.downstream.customer-core.base-url=http://customer-service:8080
+customer-core.base-url=http://localhost:8081
+exposure-service.base-url=http://localhost:8082
 ```
 
-Or via environment variable:
+2. Switch implementations by adjusting CDI priorities (see DOWNSTREAM_SERVICES.md)
 
-```bash
-APP_DOWNSTREAM_CUSTOMER_CORE_BASE_URL=http://customer-service:8080
-```
+3. Test with `mvn quarkus:dev`
 
 ### Replacing Stub Gateways with GraphQL Clients
 

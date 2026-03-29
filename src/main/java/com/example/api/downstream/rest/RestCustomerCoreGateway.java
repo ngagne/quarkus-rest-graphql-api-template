@@ -1,74 +1,60 @@
 package com.example.api.downstream.rest;
 
+import com.example.api.application.ConflictException;
+import com.example.api.application.ResourceNotFoundException;
 import com.example.api.downstream.CustomerCoreGateway;
 import com.example.api.model.CustomerCoreProfile;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.Objects;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 /**
- * REST implementation of CustomerCoreGateway.
+ * REST implementation of CustomerCoreGateway using Quarkus Declarative REST Client.
  *
  * This example shows how to replace the stub gateway with a real REST client.
- * Configure the downstream service URL via configuration:
+ * The declarative REST client is preferred over manual ClientBuilder usage:
+ * - Automatic configuration via MicroProfile Config
+ * - Built-in retry and fault tolerance support
+ * - Easier testing and mocking
+ * - Better integration with Quarkus observability (tracing, metrics)
  *
+ * Configuration in application.properties:
  * <pre>
- * # application.properties
- * app.downstream.customer-core.base-url=http://localhost:8081
+ * # Customer Core REST Client Configuration
+ * customer-core.base-url=http://localhost:8081
+ * %dev.customer-core.base-url=http://localhost:8081
+ * %test.customer-core.base-url=http://localhost:8080
  * </pre>
  *
- * To use this implementation:
- * 1. Add the @Alternative annotation to StubCustomerCoreGateway
- * 2. Remove @Alternative from this class
- * 3. Configure the downstream service URL
+ * To enable this implementation instead of the stub:
+ * 1. Add {@code @AlternativePriority(1)} to {@code StubCustomerCoreGateway}
+ * 2. Remove {@code @Alternative} from this class
+ * 3. Configure the downstream service URL for your environment
  *
- * @see com.example.api.downstream.stub.StubCustomerCoreGateway
+ * @see CustomerCoreRestClient for the declarative client interface
+ * @see com.example.api.downstream.stub.StubCustomerCoreGateway for the stub implementation
  */
 @ApplicationScoped
-@jakarta.enterprise.inject.Alternative
 public class RestCustomerCoreGateway implements CustomerCoreGateway {
 
-    private final Client client;
-    private final String baseUrl;
+    private final CustomerCoreRestClient restClient;
 
-    public RestCustomerCoreGateway() {
-        this.client = ClientBuilder.newClient();
-        // In production, inject this via @ConfigProperty
-        this.baseUrl = System.getProperty("app.downstream.customer-core.base-url", 
-                                          "http://localhost:8081");
+    @Inject
+    public RestCustomerCoreGateway(@RestClient final CustomerCoreRestClient restClient) {
+        this.restClient = restClient;
     }
 
     @Override
     public CustomerCoreProfile fetchCustomerProfile(final String customerId) {
-        Objects.requireNonNull(customerId, "customerId must not be null");
-
-        try (Response response = client
-                .target(baseUrl)
-                .path("api")
-                .path("customers")
-                .path(customerId)
-                .path("profile")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get()) {
-
-            if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+        try {
+            return restClient.getCustomerProfile(customerId);
+        } catch (WebApplicationException e) {
+            if (e.getResponse().getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
                 return null;
             }
-
-            if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-                throw new WebApplicationException(
-                    "Failed to fetch customer profile: " + response.getStatus(),
-                    response.getStatus()
-                );
-            }
-
-            return response.readEntity(CustomerCoreProfile.class);
-
+            throw e;
         } catch (Exception e) {
             throw new WebApplicationException(
                 "Error calling downstream customer service: " + e.getMessage(),
@@ -79,34 +65,14 @@ public class RestCustomerCoreGateway implements CustomerCoreGateway {
 
     @Override
     public CustomerCoreProfile createCustomerProfile(final CustomerCoreProfile profile) {
-        Objects.requireNonNull(profile, "profile must not be null");
-        Objects.requireNonNull(profile.customerId(), "customerId must not be null");
-
-        try (Response response = client
-                .target(baseUrl)
-                .path("api")
-                .path("customers")
-                .path("profile")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.json(profile))) {
-
-            if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
-                throw new com.example.api.application.ConflictException(
+        try {
+            return restClient.createCustomerProfile(profile);
+        } catch (WebApplicationException e) {
+            if (e.getResponse().getStatus() == Response.Status.CONFLICT.getStatusCode()) {
+                throw new ConflictException(
                     "Customer profile already exists: " + profile.customerId()
                 );
             }
-
-            if (response.getStatus() != Response.Status.CREATED.getStatusCode() &&
-                response.getStatus() != Response.Status.OK.getStatusCode()) {
-                throw new WebApplicationException(
-                    "Failed to create customer profile: " + response.getStatus(),
-                    response.getStatus()
-                );
-            }
-
-            return response.readEntity(CustomerCoreProfile.class);
-
-        } catch (WebApplicationException e) {
             throw e;
         } catch (Exception e) {
             throw new WebApplicationException(
@@ -118,34 +84,14 @@ public class RestCustomerCoreGateway implements CustomerCoreGateway {
 
     @Override
     public CustomerCoreProfile updateCustomerProfile(final CustomerCoreProfile profile) {
-        Objects.requireNonNull(profile, "profile must not be null");
-        Objects.requireNonNull(profile.customerId(), "customerId must not be null");
-
-        try (Response response = client
-                .target(baseUrl)
-                .path("api")
-                .path("customers")
-                .path(profile.customerId())
-                .path("profile")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .put(Entity.json(profile))) {
-
-            if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-                throw new com.example.api.application.ResourceNotFoundException(
+        try {
+            return restClient.updateCustomerProfile(profile.customerId(), profile);
+        } catch (WebApplicationException e) {
+            if (e.getResponse().getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+                throw new ResourceNotFoundException(
                     "Customer profile not found: " + profile.customerId()
                 );
             }
-
-            if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-                throw new WebApplicationException(
-                    "Failed to update customer profile: " + response.getStatus(),
-                    response.getStatus()
-                );
-            }
-
-            return response.readEntity(CustomerCoreProfile.class);
-
-        } catch (WebApplicationException e) {
             throw e;
         } catch (Exception e) {
             throw new WebApplicationException(
