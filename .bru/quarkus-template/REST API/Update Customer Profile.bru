@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{baseUrl}}/api/customers/{{customerId}}/profile
+  url: {{baseUrl}}/v1/api/customers/{{customerId}}/profile
   body: json {
     "customerId": "{{customerId}}",
     "availableBalance": 75000.00

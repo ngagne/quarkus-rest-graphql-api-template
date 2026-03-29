@@ -225,9 +225,9 @@ flowchart TB
 ## Endpoints
 
 - REST:
-  - `GET /api/customers/{customerId}/profile` - Get customer profile
-  - `POST /api/customers/profile` - Create customer profile
-  - `PUT /api/customers/{customerId}/profile` - Update customer profile
+  - `GET /v1/api/customers/{customerId}/profile` - Get customer profile
+  - `POST /v1/api/customers/profile` - Create customer profile
+  - `PUT /v1/api/customers/{customerId}/profile` - Update customer profile
 - GraphQL: `POST /graphql`
   - Query: `customerProfile(customerId: String!): CustomerProfileView`
   - Mutation: `createCustomerProfile(input: CreateCustomerProfileInput!): CustomerProfileView!`
@@ -241,13 +241,13 @@ flowchart TB
 Example REST GET call:
 
 ```bash
-curl http://localhost:8080/api/customers/CUST-001/profile
+curl http://localhost:8080/v1/api/customers/CUST-001/profile
 ```
 
 Example REST POST call:
 
 ```bash
-curl -X POST http://localhost:8080/api/customers/profile \
+curl -X POST http://localhost:8080/v1/api/customers/profile \
   -H 'Content-Type: application/json' \
   -d '{
     "customerId": "CUST-001",
@@ -262,7 +262,7 @@ curl -X POST http://localhost:8080/api/customers/profile \
 Example REST PUT call:
 
 ```bash
-curl -X PUT http://localhost:8080/api/customers/CUST-001/profile \
+curl -X PUT http://localhost:8080/v1/api/customers/CUST-001/profile \
   -H 'Content-Type: application/json' \
   -d '{
     "customerId": "CUST-001",

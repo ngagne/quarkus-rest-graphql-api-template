@@ -17,7 +17,7 @@ tags:
   - name: CustomerProfile
     description: Operations related to customer profiles
 paths:
-  /api/customers/{customerId}/profile:
+  /v1/api/customers/{customerId}/profile:
     get:
       description: Retrieve an aggregated customer profile, including exposures across various products.
       tags:
@@ -140,7 +140,7 @@ paths:
                 code: "NOT_FOUND"
                 message: "Customer profile not found for customerId: CUST-12345"
                 violations: []
-  /api/customers/profile:
+  /v1/api/customers/profile:
     post:
       description: Create a new customer profile.
       tags:

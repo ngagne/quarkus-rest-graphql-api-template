@@ -27,6 +27,6 @@ class PlatformEndpointsTest {
                 .get("/q/openapi")
                 .then()
                 .statusCode(200)
-                .body(containsString("/api/customers/{customerId}/profile"));
+                .body(containsString("/v1/api/customers/{customerId}/profile"));
     }
 }
