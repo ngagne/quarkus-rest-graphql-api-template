@@ -37,7 +37,11 @@
       "Bash(rm *)",
       "Bash(mkdir *)",
       "Bash(pkill *)",
-      "Bash(java *)"
+      "Bash(java *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(ls *)",
+      "Bash(node *)"
     ]
   },
   "$version": 3
