@@ -40,8 +40,10 @@ This project uses a design-first approach for both REST and GraphQL APIs. The sc
 ### GraphQL Schema
 Located at `src/main/resources/graphql/schema.graphql`.
 The `graphql-codegen-maven-plugin` generates:
-- Data models (POJOs) in `com.example.api.graphql.generated`.
+- Data models (POJOs) in `com.example.api.model` (within `target/generated-sources/graphql`).
 - Service interfaces in `com.example.api.graphql.generated`.
+
+> **Note:** Generated models like `CustomerProfileView` and `ProductExposure` live in the `target/` directory. The GraphQL schema is the source of truth for these models. When modifying the schema, run `mvn generate-sources` to regenerate them.
 
 ### OpenAPI Specification
 Located at `src/main/resources/openapi/openapi.yaml`.
