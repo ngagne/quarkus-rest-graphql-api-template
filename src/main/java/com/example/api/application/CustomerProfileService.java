@@ -6,7 +6,6 @@ import com.example.api.model.CustomerCoreProfile;
 import com.example.api.model.CustomerProfileView;
 import com.example.api.model.ProductExposure;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -60,14 +59,10 @@ public class CustomerProfileService {
         );
     }
 
-    public CustomerProfileView createCustomerProfile(@Valid final CustomerCoreProfile profile) {
+    public CustomerProfileView createCustomerProfile(final CustomerCoreProfile profile) {
         Objects.requireNonNull(profile, "profile must not be null");
 
         final String normalizedCustomerId = normalizeCustomerId(profile.customerId());
-        validateNameFields(profile.givenName(), profile.familyName());
-        validateSegment(profile.segment());
-        validateBaseCurrency(profile.baseCurrency());
-        validateAvailableBalance(profile.availableBalance());
 
         final CustomerCoreProfile normalizedProfile = new CustomerCoreProfile(
                 normalizedCustomerId,
@@ -168,36 +163,6 @@ public class CustomerProfileService {
             throw new InvalidRequestException("customerId", "customerId must not be blank");
         }
         return normalizedCustomerId;
-    }
-
-    private void validateNameFields(final String givenName, final String familyName) {
-        if (givenName == null || givenName.trim().isEmpty()) {
-            throw new InvalidRequestException("givenName", "givenName must not be blank");
-        }
-        if (familyName == null || familyName.trim().isEmpty()) {
-            throw new InvalidRequestException("familyName", "familyName must not be blank");
-        }
-    }
-
-    private void validateSegment(final String segment) {
-        if (segment == null || segment.trim().isEmpty()) {
-            throw new InvalidRequestException("segment", "segment must not be blank");
-        }
-    }
-
-    private void validateBaseCurrency(final String baseCurrency) {
-        if (baseCurrency == null || baseCurrency.trim().isEmpty()) {
-            throw new InvalidRequestException("baseCurrency", "baseCurrency must not be blank");
-        }
-    }
-
-    private void validateAvailableBalance(final BigDecimal availableBalance) {
-        if (availableBalance == null) {
-            throw new InvalidRequestException("availableBalance", "availableBalance must not be null");
-        }
-        if (availableBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new InvalidRequestException("availableBalance", "availableBalance must not be negative");
-        }
     }
 
     private String formatFullName(final CustomerCoreProfile coreProfile) {

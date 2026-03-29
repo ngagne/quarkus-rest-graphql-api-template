@@ -3,6 +3,8 @@ package com.example.api.model;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -12,15 +14,16 @@ public class CreateCustomerProfileRequest {
 
     @NotNull
     private String customerId;
-    @NotNull
+    @NotBlank
     private String givenName;
-    @NotNull
+    @NotBlank
     private String familyName;
-    @NotNull
+    @NotBlank
     private String segment;
-    @NotNull
+    @NotBlank
     private String baseCurrency;
     @NotNull
+    @DecimalMin(value = "0.0", inclusive = false, message = "availableBalance must be positive")
     private BigDecimal availableBalance;
 
     public CreateCustomerProfileRequest() {

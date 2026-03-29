@@ -6,7 +6,6 @@ import com.example.api.model.CreateCustomerProfileRequest;
 import com.example.api.model.CustomerProfileView;
 import com.example.api.model.UpdateCustomerProfileRequest;
 import com.example.api.rest.generated.CustomerProfileApi;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Response;
 
 public class CustomerProfileResource implements CustomerProfileApi {
@@ -27,7 +26,7 @@ public class CustomerProfileResource implements CustomerProfileApi {
     }
 
     @Override
-    public Response createCustomerProfile(@Valid final CreateCustomerProfileRequest request) {
+    public Response createCustomerProfile(final CreateCustomerProfileRequest request) {
         final CustomerProfileView profile = customerProfileService.createCustomerProfile(
                 mapper.toCustomerCoreProfile(request));
         return Response.status(Response.Status.CREATED).entity(profile).build();
@@ -35,7 +34,7 @@ public class CustomerProfileResource implements CustomerProfileApi {
 
     @Override
     public Response updateCustomerProfile(final String customerId,
-                                          @Valid final UpdateCustomerProfileRequest request) {
+                                          final UpdateCustomerProfileRequest request) {
         final CustomerProfileView profile = customerProfileService.updateCustomerProfile(
                 mapper.toCustomerCoreProfile(request));
         return Response.ok(profile).build();

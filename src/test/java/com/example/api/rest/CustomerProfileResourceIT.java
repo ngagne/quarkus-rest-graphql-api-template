@@ -137,9 +137,9 @@ class CustomerProfileResourceIT {
                 .post("/v1/api/customers/profile")
                 .then()
                 .statusCode(400)
-                .body("code", equalTo("INVALID_REQUEST"))
+                .body("code", equalTo("VALIDATION_FAILED"))
                 .body("violations.field", hasItem("givenName"))
-                .body("violations.message", hasItem("givenName must not be blank"));
+                .body("violations.message", hasItem("must not be blank"));
     }
 
     @Test
