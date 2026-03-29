@@ -23,4 +23,8 @@ public record ApiError(String code, String message, List<ApiViolation> violation
     public static ApiError conflict(final String message) {
         return new ApiError("CONFLICT", message, List.of());
     }
+
+    public static ApiError internalError(final String message) {
+        return new ApiError("INTERNAL_ERROR", message, List.of());
+    }
 }
