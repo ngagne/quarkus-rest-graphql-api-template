@@ -11,10 +11,12 @@ import jakarta.ws.rs.core.Response;
 public class CustomerProfileResource implements CustomerProfileApi {
 
     private final CustomerProfileService customerProfileService;
-    private final CustomerProfileMapper mapper = CustomerProfileMapper.INSTANCE;
+    private final CustomerProfileMapper mapper;
 
-    public CustomerProfileResource(final CustomerProfileService customerProfileService) {
+    public CustomerProfileResource(final CustomerProfileService customerProfileService,
+                                   final CustomerProfileMapper mapper) {
         this.customerProfileService = customerProfileService;
+        this.mapper = mapper;
     }
 
     @Override

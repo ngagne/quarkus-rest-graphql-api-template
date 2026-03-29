@@ -16,10 +16,12 @@ import org.eclipse.microprofile.graphql.Query;
 public class CustomerProfileQuery {
 
     private final CustomerProfileService customerProfileService;
-    private final CustomerProfileMapper mapper = CustomerProfileMapper.INSTANCE;
+    private final CustomerProfileMapper mapper;
 
-    public CustomerProfileQuery(final CustomerProfileService customerProfileService) {
+    public CustomerProfileQuery(final CustomerProfileService customerProfileService,
+                                final CustomerProfileMapper mapper) {
         this.customerProfileService = customerProfileService;
+        this.mapper = mapper;
     }
 
     @Query("customerProfile")

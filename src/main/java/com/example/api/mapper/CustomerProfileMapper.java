@@ -6,16 +6,13 @@ import com.example.api.model.CustomerCoreProfile;
 import com.example.api.model.UpdateCustomerProfileRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 /**
  * Mapper for converting between REST/GraphQL DTOs and domain models.
  * Uses MapStruct for compile-time code generation to avoid manual mapping.
  */
-@Mapper
+@Mapper(componentModel = "jakarta-cdi")
 public interface CustomerProfileMapper {
-
-    CustomerProfileMapper INSTANCE = Mappers.getMapper(CustomerProfileMapper.class);
 
     @Mapping(target = "customerId", source = "customerId")
     @Mapping(target = "givenName", source = "givenName")
