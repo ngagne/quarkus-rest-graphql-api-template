@@ -390,6 +390,22 @@ When the `observability` Compose profile is enabled:
 
 If your team prefers the Datadog Java tracer instead of OTLP export, keep this template structure and add the Java agent at runtime through `JAVA_OPTS_APPEND`.
 
+## CORS configuration
+
+CORS is enabled by default to support web and mobile clients accessing the API from browsers. The `CorsFilter` class configures permissive CORS settings suitable for local development:
+
+- Allowed origins: `*` (all origins)
+- Allowed methods: `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`
+- Allowed headers: `Content-Type`, `Authorization`, `X-Requested-With`
+- Exposed headers: `Content-Disposition`
+- Max age: 24 hours
+
+For production deployments, customize `src/main/java/com/example/api/rest/CorsFilter.java` to restrict allowed origins to specific domains:
+
+```java
+responseContext.getHeaders().putSingle("Access-Control-Allow-Origin", "https://app.example.com");
+```
+
 ## API starter conventions
 
 - REST inputs use Bean Validation and return a small, predictable JSON error payload for invalid requests.
