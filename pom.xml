@@ -311,8 +311,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[17,22)</version>
-                                    <message>Build this template with Java 17+.</message>
+                                    <version>[21,22)</version>
+                                    <message>Build this template with Java 21+.</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.9,)</version>

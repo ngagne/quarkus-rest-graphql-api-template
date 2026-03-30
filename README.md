@@ -1,10 +1,10 @@
 # Quarkus API Template
 
-Barebones Quarkus 3.34.1 template for Java 17 teams building REST and GraphQL microservices. The starter stays intentionally small, but it is shaped around a common financial-domain use case: orchestrating multiple downstream calls, mapping the results into a consumer-friendly contract, and returning that through a stable API.
+Barebones Quarkus 3.34.1 template for Java 21 teams building REST and GraphQL microservices. The starter stays intentionally small, but it is shaped around a common financial-domain use case: orchestrating multiple downstream calls, mapping the results into a consumer-friendly contract, and returning that through a stable API.
 
 ## What is included
 
-- Java 17
+- Java 21
 - Quarkus 3.34.1
 - Maven
 - REST endpoint support with Jackson
@@ -338,11 +338,11 @@ curl http://localhost:8080/graphql \
 
 ### Prerequisites
 
-- JDK 17 for local Maven builds
+- JDK 21 for local Maven builds
 - Maven 3.9+
 - Docker Desktop or compatible Docker runtime for container-based runs
 
-The build now fails during `validate` if it is run with Java other than 17, so teams get a fast, clear setup error instead of a compiler failure later in the lifecycle.
+The build now fails during `validate` if it is run with Java other than 21, so teams get a fast, clear setup error instead of a compiler failure later in the lifecycle.
 
 ### Dev mode
 
